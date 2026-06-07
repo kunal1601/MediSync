@@ -7,7 +7,7 @@ const PharmacistAlertsPage = () => {
     const [requests, setRequests] = useState([
         {
             id: 1,
-            medicine: "Paracetamol 500mg",
+            medicine: "Volini Gel",
             requestType: "Restock Request",
             status: "Pending"
         },
@@ -28,6 +28,7 @@ const PharmacistAlertsPage = () => {
     const [newRequest, setNewRequest] = useState({
         medicine: "",
         requestType: "Restock Request",
+        customRequestType: "",
         message: ""
     });
     // System-generated alerts automatically detected by inventory system
@@ -56,10 +57,19 @@ const PharmacistAlertsPage = () => {
 
         if (!newRequest.medicine.trim()) return;
 
+        if (
+            newRequest.requestType === "Other" &&
+            !newRequest.customRequestType.trim()
+        ) {
+            alert("Please specify the request type");
+            return;
+        }
         const request = {
             id: Date.now(),
             medicine: newRequest.medicine,
-            requestType: newRequest.requestType,
+            requestType: newRequest.requestType === "Other"
+            ? newRequest.customRequestType
+            : newRequest.requestType,
             status: "Pending"
         };
         // Add new request at the top of request list
@@ -68,6 +78,7 @@ const PharmacistAlertsPage = () => {
         setNewRequest({
             medicine: "",
             requestType: "Restock Request",
+            customRequestType: "",
             message: ""
         });
     };
@@ -313,7 +324,31 @@ const PharmacistAlertsPage = () => {
                             </div>
                         )}
                     </div>
-
+                    {
+                        newRequest.requestType === "Other" && (
+                            <input
+                                type="text"
+                                placeholder="Specify Request Type"
+                                value={newRequest.customRequestType}
+                                onChange={(e) =>
+                                    setNewRequest({
+                                        ...newRequest,
+                                        customRequestType: e.target.value
+                                    })
+                                }
+                                className="
+                                    w-full
+                                    border
+                                    rounded-lg
+                                    px-4
+                                    py-3
+                                    hover:border-brand-secondary
+                                    focus:outline-none
+                                    focus:border-brand-secondary
+                                "
+                            />
+                        )
+                    }
                     <textarea
                         rows="4"
                         placeholder="Write request details..."
