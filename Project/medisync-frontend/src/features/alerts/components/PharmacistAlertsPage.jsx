@@ -1,5 +1,10 @@
 import { useState } from "react";
-
+import {
+  FaBell,
+  FaClipboardList,
+  FaPaperPlane,
+  FaTriangleExclamation
+} from "react-icons/fa6";
 const PharmacistAlertsPage = () => {
     // Controls custom request type dropdown visibility
     const [showDropdown, setShowDropdown] = useState(false);
@@ -111,15 +116,17 @@ const PharmacistAlertsPage = () => {
 
             {/* PAGE HEADER */}
             <div className="bg-white rounded-xl border border-slate-200 px-6 py-4 shadow-sm">
-                <h2 className="text-2xl font-bold text-slate-800">
+                <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
+                    <FaBell className="text-brand-secondary" /> 
                     Alerts & Requests
                 </h2>
             </div>
 
             {/* SYSTEM ALERTS */}
-            <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-                <div className="px-6 py-4 border-b">
-                    <h3 className="font-bold text-lg">
+            <div className="bg-white rounded-xl border border-slate-100 shadow-sm">
+                <div className="px-6 py-4 border-b-0">
+                    <h3 className="flex items-center gap-2 font-bold text-lg leading-none">
+                         <FaTriangleExclamation className="text-brand-secondary text-base" />
                         System Generated Alerts
                     </h3>
                 </div>
@@ -129,8 +136,7 @@ const PharmacistAlertsPage = () => {
                     {systemAlerts.map((alert) => (
                        <div
                             key={alert.id}
-                            className="border rounded-lg p-4 flex justify-between items-center"
-                        >
+                           className="border border-slate-100 rounded-lg p-4 flex justify-between items-center hover:bg-slate-50 transition-all duration-200" >
                         <div>
                             <p className="font-semibold">
                                 {alert.medicine}
@@ -181,8 +187,9 @@ const PharmacistAlertsPage = () => {
             {/* REQUEST STATUS */}
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
 
-                <div className="px-6 py-4 border-b">
-                    <h3 className="font-bold text-lg">
+                <div className="px-6 py-4 border-b-0">
+                    <h3 className="flex items-center gap-2 font-bold text-lg">
+                        <FaClipboardList className="text-brand-secondary" />
                         Requests Sent To Admin
                     </h3>
                 </div>
@@ -207,7 +214,8 @@ const PharmacistAlertsPage = () => {
 
                                 <tr
                                     key={request.id}
-                                    className="border-t"
+                                    className="border-t border-slate-100 hover:bg-slate-50 transition-all duration-200
+"
                                 >
                                     <td className="px-6 py-4">
                                         {request.medicine}
@@ -247,8 +255,9 @@ const PharmacistAlertsPage = () => {
             {/* CREATE REQUEST */}
             <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
 
-                <div className="px-6 py-4 border-b">
-                    <h3 className="font-bold text-lg">
+                <div className="px-6 py-4 border-b-0">
+                    <h3 className="flex items-center gap-2 font-bold text-lg">
+                         <FaPaperPlane className="text-brand-secondary" />
                         Raise New Request
                     </h3>
                 </div>
@@ -265,7 +274,7 @@ const PharmacistAlertsPage = () => {
                                 medicine: e.target.value
                             })
                         }
-                        className="w-full border rounded-lg px-4 py-3  hover:border-brand-secondary"
+                        className="w-full border border-slate-200 rounded-lg px-4 py-3  hover:border-brand-secondary"
                     />
 
                    <div className="relative">
@@ -281,7 +290,7 @@ const PharmacistAlertsPage = () => {
                             py-3
                            
                             border
-                            
+                            border-slate-200
                             rounded-lg
                             text-slate-700
                             hover:border-brand-secondary
@@ -342,6 +351,7 @@ const PharmacistAlertsPage = () => {
                                     rounded-lg
                                     px-4
                                     py-3
+                                    
                                     hover:border-brand-secondary
                                     focus:outline-none
                                     focus:border-brand-secondary
@@ -359,7 +369,7 @@ const PharmacistAlertsPage = () => {
                                 message: e.target.value
                             })
                         }
-                        className="w-full border rounded-lg px-4 py-3  hover:border-brand-secondary"
+                        className="w-full border rounded-lg px-4 py-3 border-slate-200 hover:border-brand-secondary"
                     />
 
                     <button

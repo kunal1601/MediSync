@@ -1,12 +1,14 @@
 import { useState } from 'react';
-
+import Calendar from "react-calendar";
+import "../styles/style.css";
+import "react-calendar/dist/Calendar.css";
 /**
  * View Component: Pharmacist Interactive Analytics Panel
  * Renders filter controls and stock tracking charts matching image_0f704d.png
  */
 const PharmacistDashboardPage = () => {
   const [activeFilter, setActiveFilter] = useState('By Most Sold');
-
+  const [selectedDate, setSelectedDate] = useState(new Date());
   const filterTabs = ['By Drug Type', 'By Company Name', 'By year', 'By Most Sold'];
 
   // Data map replicating the dynamic visual values in the design chart
@@ -21,7 +23,226 @@ const PharmacistDashboardPage = () => {
 
   return (
     <div className="space-y-6 animate-fadeIn text-left">
-      
+     {/* Welcome Banner */}
+<div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+    <h1 className="text-2xl font-bold text-slate-800">
+        Good Morning, Pharmacist 👋
+    </h1>
+
+    <p className="text-slate-500 mt-2">
+        Here's today's pharmacy performance overview.
+    </p>
+</div>
+
+{/* Statistics Cards */}
+<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+        <p className="text-slate-500 text-sm">Total Sales</p>
+        <h2 className="text-3xl font-bold text-brand-secondary mt-2">
+            ₹52,450
+        </h2>
+    </div>
+
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+        <p className="text-slate-500 text-sm">Bills Today</p>
+        <h2 className="text-3xl font-bold text-brand-secondary mt-2">
+            125
+        </h2>
+    </div>
+
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+        <p className="text-slate-500 text-sm">Low Stock Items</p>
+        <h2 className="text-3xl font-bold text-orange-500 mt-2">
+            12
+        </h2>
+    </div>
+
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+        <p className="text-slate-500 text-sm">Expiring Medicines</p>
+        <h2 className="text-3xl font-bold text-red-500 mt-2">
+            8
+        </h2>
+    </div>
+
+</div>
+
+{/* Alerts + Calendar + Top Selling */}
+<div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
+
+    {/* Alerts */}
+    <div className="xl:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+
+        <div className="px-6 py-4 border-b border-slate-100">
+            <h3 className="font-bold text-lg text-slate-800">
+                Today's Alerts
+            </h3>
+        </div>
+
+        <div className="p-5 space-y-4 ">
+
+            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-brand-secondary/30 hover:shadow-sm transition"
+            >
+                <div>
+                    <p className="font-semibold">Paracetamol 500mg</p>
+                    <p className="text-sm text-slate-500">Out Of Stock</p>
+                </div>
+
+                <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-semibold">
+                    High
+                </span>
+            </div>
+
+            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-brand-secondary/30 hover:shadow-sm transition">
+                <div>
+                    <p className="font-semibold">Amoxicillin 250mg</p>
+                    <p className="text-sm text-slate-500">Near Expiry</p>
+                </div>
+
+                <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-semibold">
+                    Medium
+                </span>
+            </div>
+
+             <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-brand-secondary/30 hover:shadow-sm transition">
+               <div>
+                    <p className="font-semibold">Pantoprazole</p>
+                    <p className="text-sm text-slate-500">Expired</p>
+                </div>
+
+                <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-semibold">
+                    High
+                </span>
+            </div>
+
+        </div>
+
+    </div>
+
+    {/* Calendar */}
+    <div className="xl:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+
+        <div className="px-6 py-4 border-b border-slate-100">
+            <h3 className="font-bold text-lg text-slate-800">
+                Daily Sales Calendar
+            </h3>
+        </div>
+
+        <div className="p-6">
+
+    <div className="grid md:grid-cols-2 gap-6">
+
+        {/* Calendar */}
+        <div>
+            <Calendar
+                onChange={setSelectedDate}
+                value={selectedDate}
+            />
+        </div>
+
+        {/* Sales Analytics */}
+        <div className="space-y-4">
+
+            <div className="rounded-xl bg-brand-secondary/10 p-4">
+                <p className="text-sm text-slate-500">
+                    Sales Today
+                </p>
+
+                <h3 className="text-3xl font-bold text-brand-secondary mt-1">
+                    ₹4,850
+                </h3>
+            </div>
+
+            <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">
+                    Bills Generated
+                </p>
+
+                <h3 className="text-2xl font-bold text-slate-800 mt-1">
+                    42
+                </h3>
+            </div>
+
+            <div className="rounded-xl bg-slate-50 p-4">
+                <p className="text-sm text-slate-500">
+                    Avg Bill Value
+                </p>
+
+                <h3 className="text-2xl font-bold text-slate-800 mt-1">
+                    ₹115
+                </h3>
+            </div>
+
+           
+
+        </div>
+
+    </div>
+
+</div>
+
+    </div>
+
+   
+
+</div>
+ {/* Top Selling Medicines */}
+    {/* Top Medicines */}
+
+<div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+
+    <div className="px-6 py-4 border-b border-slate-100">
+        <h3 className="font-bold text-lg text-slate-800">
+            Top Selling Medicines
+        </h3>
+    </div>
+
+    <div className="p-6">
+
+        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
+
+            {[
+                { name: "Crocin Advance", sold: 450 },
+                { name: "Paracetamol", sold: 390 },
+                { name: "Dolo 650", sold: 350 },
+                { name: "Azithromycin", sold: 280 }
+            ].map((medicine) => (
+
+                <div
+                    key={medicine.name}
+                    className="
+                        p-5
+                        rounded-xl
+                        bg-slate-50
+                        border
+                        border-slate-100
+                    "
+                >
+                    <p className="font-semibold text-slate-800">
+                        {medicine.name}
+                    </p>
+
+                    <p className="mt-2 text-brand-secondary font-bold text-xl">
+                        {medicine.sold}
+                    </p>
+
+                    <p className="text-xs text-slate-400">
+                        Units Sold
+                    </p>
+                </div>
+
+            ))}
+
+        </div>
+
+    </div>
+
+</div>
+
+{/* Existing Stock Overview Graph */}
+<div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+    {/* Your existing graph code here */}
+</div>
       {/* STOCK OVERVIEW MAIN CONTAINER PANEL */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         
