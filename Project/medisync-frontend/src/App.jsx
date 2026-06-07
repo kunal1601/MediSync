@@ -5,6 +5,7 @@ import AdminLayout from './layouts/AdminLayout';
 import PharmacistLayout from './layouts/PharmacistLayout';
 import OwnerDashboardPage from './features/dashboard/components/OwnerDashboardPage';
 import PharmacistDashboardPage from './features/dashboard/components/PharmacistDashboardPage'; // 👈 Import new panel component
+import BillingPage from './features/billing/components/BillingPage'; // 🐸 Import new billing page component 
 
 function App() {
   return (
@@ -30,7 +31,7 @@ function App() {
         {/* MASTER PHARMACIST CHANNELS */}
         <Route path="/dashboard/pharmacist" element={<PharmacistLayout />}>
           <Route index element={<PharmacistDashboardPage />} /> {/* 👈 Swapped placeholder out */}
-          <Route path="billing" element={<div className="text-left font-bold text-slate-700">Smart Billing Console Workspace</div>} />
+         <Route path="billing" element={<BillingPage />} /> {/* 🐸 Added new billing page route */}
           <Route path="stock-details" element={<div className="text-left font-bold text-slate-700">Pharmacy Medical Supply Matrix Ledger</div>} />
           <Route path="history" element={<div className="text-left font-bold text-slate-700">Completed Store Logs & Invoicing Logs</div>} />
         </Route>
