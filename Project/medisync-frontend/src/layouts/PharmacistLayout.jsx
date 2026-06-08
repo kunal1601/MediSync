@@ -8,7 +8,7 @@ import {
   LogOut 
 } from 'lucide-react';
 import Logo from '../shared/components/Logo';
-
+import { Bell } from 'lucide-react';
 /**
  * Layout Component: PharmacistLayout Framework
  * Aligned with the design constraints in image_0f704d.png
@@ -23,6 +23,7 @@ const PharmacistLayout = () => {
     { label: 'Bills History', path: '/dashboard/pharmacist/history', icon: History },
     { label: 'Billings', path: '/dashboard/pharmacist/billing', icon: Receipt },
     { label: 'Stock Details', path: '/dashboard/pharmacist/stock-details', icon: PackageSearch, hasSubmenu: true },
+    { label: 'Alerts',  path: '/dashboard/pharmacist/alerts', icon: Bell},
   ];
 
   return (
