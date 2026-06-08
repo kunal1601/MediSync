@@ -1,5 +1,5 @@
 import { useState } from "react";
-
+import { FaBoxesStacked } from "react-icons/fa6";
 const StockDetailsPage = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [showFilter,setShowFilter]=useState(false);
@@ -105,7 +105,8 @@ const StockDetailsPage = () => {
         <div className="space-y-5 animate-fadeIn">
         {/* PAGE TITLE */}
         <div className="bg-white rounded-xl border border-slate-200 px-6 py-4 shadow-sm">
-            <h2 className="text-2xl font-bold text-slate-800">
+            <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
+                <FaBoxesStacked className="text-brand-secondary text-xl" />
             Stock Details
             </h2>
         </div>
