@@ -22,6 +22,10 @@ const BillingPage = () => {
     },
   ];
 
+  const [customerName, setCustomerName] = useState("");
+  const [contactNumber, setContactNumber] = useState("");
+  const [age, setAge] = useState("");
+  const [gender, setGender] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [selectedMedicine, setSelectedMedicine] = useState(null);
   const [quantity, setQuantity] = useState("");
@@ -62,42 +66,38 @@ const BillingPage = () => {
 
   const grandTotal = subtotal + gstAmount - Number(discount || 0);
   const handleGenerateBill = () => {
-  if (billItems.length === 0) {
-    alert("Add medicines before generating bill");
-    return;
-  }
+    if (billItems.length === 0) {
+      alert("Add medicines before generating bill");
+      return;
+    }
 
-  const bill = {
-  invoiceNo: `INV-${Date.now()}`,
-  date: new Date().toLocaleString(),
+    const bill = {
+      invoiceNo: `INV-${Date.now()}`,
+      date: new Date().toLocaleString(),
 
-  customer: {
-    name: customerName,
-    contact: contactNumber,
-    age,
-    gender,
-  },
+      customer: {
+        name: customerName,
+        contact: contactNumber,
+        age,
+        gender,
+      },
 
-  items: billItems,
+      items: billItems,
 
-  subtotal,
-  discount,
-  gstAmount,
-  grandTotal,
-};
+      subtotal,
+      discount,
+      gstAmount,
+      grandTotal,
+    };
 
-  const existingBills =
-    JSON.parse(localStorage.getItem("billHistory")) || [];
+    const existingBills = JSON.parse(localStorage.getItem("billHistory")) || [];
 
-  existingBills.push(bill);
+    existingBills.push(bill);
 
-  localStorage.setItem(
-    "billHistory",
-    JSON.stringify(existingBills)
-  );
+    localStorage.setItem("billHistory", JSON.stringify(existingBills));
 
-  alert("Bill saved to history successfully");
-};
+    alert("Bill saved to history successfully");
+  };
   return (
     <div className="space-y-6 animate-fadeIn text-left">
       {/* Page Header */}
@@ -120,26 +120,30 @@ const BillingPage = () => {
 
         <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
           <input
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
             placeholder="Customer Name"
-            className="border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-brand-secondary"
+            className="border border-slate-200 rounded-lg px-4 py-3"
           />
 
           <input
+            value={contactNumber}
+            onChange={(e) => setContactNumber(e.target.value)}
             placeholder="Contact Number"
-            className="border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-brand-secondary"
           />
 
           <input
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
             placeholder="Age"
-            className="border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-brand-secondary"
           />
 
-          <select className="border border-slate-200 rounded-lg px-4 py-3 outline-none focus:border-brand-secondary">
+          <select value={gender} onChange={(e) => setGender(e.target.value)}>
             <option>Select Gender</option>
             <option>Male</option>
             <option>Female</option>
             <option>Other</option>
-          </select>
+          </select> 
         </div>
       </div>
 
@@ -351,20 +355,20 @@ const BillingPage = () => {
               <span className="text-slate-600">Discount (%)</span>
 
               <input
-  type="number"
-  min="0"
-  max="100"
-  value={discount}
-  onChange={(e) => {
-    const value = Number(e.target.value);
+                type="number"
+                min="0"
+                max="100"
+                value={discount}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
 
-    if (value > 100) {
-      setDiscount(100);
-    } else {
-      setDiscount(value);
-    }
-  }}
-  className="
+                  if (value > 100) {
+                    setDiscount(100);
+                  } else {
+                    setDiscount(value);
+                  }
+                }}
+                className="
     w-24
     border
     border-slate-200
@@ -373,7 +377,7 @@ const BillingPage = () => {
     py-2
     text-right
   "
-/>
+              />
             </div>
 
             <div className="flex justify-between">
@@ -391,8 +395,8 @@ const BillingPage = () => {
             </div>
 
             <button
-  onClick={handleGenerateBill}
-  className="
+              onClick={handleGenerateBill}
+              className="
     w-full
     bg-brand-primary
     hover:bg-brand-secondary
@@ -402,9 +406,9 @@ const BillingPage = () => {
     font-semibold
     transition
   "
->
-  Generate Bill
-</button>
+            >
+              Generate Bill
+            </button>
           </div>
         </div>
       </div>
