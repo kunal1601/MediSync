@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400" viewBox="0 0 400 400">
+  <defs>
+    <style>
+      .i { fill: none; stroke: #3d9a94; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; opacity: 0.45; }
+    </style>
+  </defs>
+  <!-- pill -->
+  <rect class="i" x="24" y="28" width="28" height="12" rx="6" transform="rotate(-25 38 34)"/>
+  <!-- stethoscope -->
+  <path class="i" d="M90 30c0 8 6 14 14 14s14-6 14-14M104 44v16M96 60h16M104 60c8 0 14 6 14 14"/>
+  <!-- microscope -->
+  <path class="i" d="M168 24v20M160 44h16M168 44v12M156 56h24M168 68v8"/>
+  <!-- heart pulse -->
+  <path class="i" d="M228 36c-6-8-18-4-18 6 0 12 18 20 18 20s18-8 18-20c0-10-12-14-18-6M228 48v8M224 52h8"/>
+  <!-- bottle -->
+  <path class="i" d="M296 26h12v6c0 4-2 6-6 6s-6-2-6-6v-6M290 38h24v24c0 4-4 8-12 8s-12-4-12-8V38z"/>
+  <!-- syringe -->
+  <path class="i" d="M352 32l16 16M360 40l-8 8M344 48l8-8"/>
+  <!-- lungs -->
+  <path class="i" d="M40 120c8-12 24-8 28 4 4-12 20-16 28-4-4 16-28 28-28 28s-24-12-28-28z"/>
+  <!-- dna -->
+  <path class="i" d="M120 108c12 8 12 24 0 32s-12 24 0 32M132 108c-12 8-12 24 0 32s12 24 0 32"/>
+  <!-- cross -->
+  <path class="i" d="M200 116h16M208 108v16"/>
+  <!-- thermometer -->
+  <path class="i" d="M276 104c0-8 8-12 8-12s8 4 8 12v28c0 8-8 12-8 12s-8-4-8-12V104z"/>
+  <!-- clipboard -->
+  <rect class="i" x="332" y="108" width="24" height="32" rx="3"/>
+  <path class="i" d="M340 108v-6h8v6"/>
+  <!-- ambulance -->
+  <rect class="i" x="20" y="200" width="40" height="24" rx="4"/>
+  <path class="i" d="M32 212h8M36 208v8"/>
+  <!-- capsule -->
+  <rect class="i" x="100" y="208" width="32" height="14" rx="7"/>
+  <!-- mask -->
+  <path class="i" d="M176 204c12 0 20 8 20 16s-8 16-20 16-20-8-20-16 8-16 20-16z"/>
+  <!-- bandage -->
+  <rect class="i" x="248" y="204" width="28" height="28" rx="4" transform="rotate(15 262 218)"/>
+  <!-- flask -->
+  <path class="i" d="M320 200h16v8l-8 24-8-24v-8z"/>
+  <!-- wheelchair symbol -->
+  <circle class="i" cx="48" cy="320" r="10"/>
+  <path class="i" d="M58 320h20M68 320v-12h12"/>
+  <!-- pills stack -->
+  <ellipse class="i" cx="128" cy="316" rx="14" ry="6"/>
+  <ellipse class="i" cx="128" cy="328" rx="14" ry="6"/>
+  <!-- hospital -->
+  <rect class="i" x="188" y="300" width="32" height="36" rx="2"/>
+  <path class="i" d="M200 312v12M194 318h12"/>
+  <!-- drop -->
+  <path class="i" d="M276 300c0-12 12-20 12-20s12 8 12 20c0 12-12 20-12 20s-12-8-12-20z"/>
+  <!-- scalpel -->
+  <path class="i" d="M340 308l20 20M348 316l-8 8"/>
+</svg>
