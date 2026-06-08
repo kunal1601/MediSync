@@ -4,19 +4,22 @@ import PharmacistLoginPage from './features/auth/components/PharmacistLoginPage'
 import AdminLayout from './layouts/AdminLayout';
 import PharmacistLayout from './layouts/PharmacistLayout';
 import OwnerDashboardPage from './features/dashboard/components/OwnerDashboardPage';
-import PharmacistDashboardPage from './features/dashboard/components/PharmacistDashboardPage'; // 👈 Import new panel component
+import PharmacistDashboardPage from './features/dashboard/components/PharmacistDashboardPage';
+
+import BillingPage from './features/billing/components/BillingPage';
 import StockDetailsPage from "./features/stock/components/StockDetailsPage";
 import PharmacistAlertsPage from './features/alerts/components/PharmacistAlertsPage';
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/login/admin" replace />} />
-        
+
         {/* Core Access Boundaries */}
         <Route path="/login/admin" element={<AdminLoginPage />} />
         <Route path="/login/pharmacist" element={<PharmacistLoginPage />} />
-        
+
         {/* MASTER ADMIN CHANNELS */}
         <Route path="/dashboard" element={<AdminLayout />}>
           <Route path="owner" element={<OwnerDashboardPage />} />
@@ -30,13 +33,13 @@ function App() {
 
         {/* MASTER PHARMACIST CHANNELS */}
         <Route path="/dashboard/pharmacist" element={<PharmacistLayout />}>
-          <Route index element={<PharmacistDashboardPage />} /> {/* 👈 Swapped placeholder out */}
-          <Route path="billing" element={<div className="text-left font-bold text-slate-700">Smart Billing Console Workspace</div>} />
+          <Route index element={<PharmacistDashboardPage />} />
+          <Route path="billing" element={<BillingPage />} />
           <Route path="stock-details" element={<StockDetailsPage />} />
           <Route path="history" element={<div className="text-left font-bold text-slate-700">Completed Store Logs & Invoicing Logs</div>} />
-          <Route path="alerts" element={<PharmacistAlertsPage />}/>
+          <Route path="alerts" element={<PharmacistAlertsPage />} />
         </Route>
-        
+
         <Route path="*" element={<div className="p-8 font-bold text-red-500 text-left">404 - Workspace Area Missing</div>} />
       </Routes>
     </BrowserRouter>
