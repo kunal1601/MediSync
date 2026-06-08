@@ -1,0 +1,70 @@
+/* MAIN CALENDAR */
+.react-calendar {
+    width: 100% !important;
+    border: none !important;
+    border-radius: 16px;
+    padding: 12px;
+    background: #f8fafc;
+    font-family: inherit;
+}
+
+/* HEADER */
+.react-calendar__navigation {
+    margin-bottom: 15px;
+}
+
+.react-calendar__navigation button {
+    color: #0f766e !important;
+    font-weight: 700;
+    font-size: 15px;
+    background: transparent !important;
+    border-radius: 10px;
+}
+
+.react-calendar__navigation button:hover {  
+    background: #daefea !important;
+}
+
+/* WEEK DAYS */
+.react-calendar__month-view__weekdays {
+    text-transform: uppercase;
+    font-size: 11px;
+    color: #64748b;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.react-calendar__month-view__weekdays abbr {
+    text-decoration: none;
+}
+
+/* DATE TILE */
+.react-calendar__tile {
+    height: 46px;
+    border-radius: 12px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.react-calendar__tile:hover {
+    background: #dfeeea !important;
+}
+
+/* TODAY */
+.react-calendar__tile--now {
+    background: #daefea  !important;
+    color: #0f766e !important;
+    font-weight: 700    ;
+    border-radius: 12px;
+}
+
+/* SELECTED DATE */
+.react-calendar__tile--active {
+    background: #43b3a6 !important;
+    color: white !important;
+    border-radius: 12px;
+}
+.react-calendar__month-view__days__day--weekend {
+    color: #334155 !important;   /* same as normal dates */
+}
+
