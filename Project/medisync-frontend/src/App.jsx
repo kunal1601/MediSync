@@ -5,7 +5,8 @@ import AdminLayout from './layouts/AdminLayout';
 import PharmacistLayout from './layouts/PharmacistLayout';
 import OwnerDashboardPage from './features/dashboard/components/OwnerDashboardPage';
 import PharmacistDashboardPage from './features/dashboard/components/PharmacistDashboardPage'; // 👈 Import new panel component
-
+import StockDetailsPage from "./features/stock/components/StockDetailsPage";
+import PharmacistAlertsPage from './features/alerts/components/PharmacistAlertsPage';
 function App() {
   return (
     <BrowserRouter>
@@ -31,8 +32,9 @@ function App() {
         <Route path="/dashboard/pharmacist" element={<PharmacistLayout />}>
           <Route index element={<PharmacistDashboardPage />} /> {/* 👈 Swapped placeholder out */}
           <Route path="billing" element={<div className="text-left font-bold text-slate-700">Smart Billing Console Workspace</div>} />
-          <Route path="stock-details" element={<div className="text-left font-bold text-slate-700">Pharmacy Medical Supply Matrix Ledger</div>} />
+          <Route path="stock-details" element={<StockDetailsPage />} />
           <Route path="history" element={<div className="text-left font-bold text-slate-700">Completed Store Logs & Invoicing Logs</div>} />
+          <Route path="alerts" element={<PharmacistAlertsPage />}/>
         </Route>
         
         <Route path="*" element={<div className="p-8 font-bold text-red-500 text-left">404 - Workspace Area Missing</div>} />
