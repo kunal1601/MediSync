@@ -19,6 +19,34 @@
   /* System State Tokens */
   --color-admin-accent: #1e3a8a;      /* Deep Navy - Owner-Only Interfaces */
   --color-alert-expiry: #e11d48;      /* Rose Red - Critical Expiry/Low Stock Warnings */
+
+  /* Dedicated Dashboard Tokens */
+  --color-medisync-navy: #004b7d;
+  --color-medisync-teal: #00a89e;
+  --color-medisync-teal-light: #4db6ac;
+  --color-medisync-teal-dark: #00796b;
+  --color-medisync-bg: #f4f7f6;
+  --color-medisync-card: #ffffff;
+  --color-medisync-text: #333333;
+  --color-medisync-muted: #888888;
+  --color-medisync-border: #e5ebeb;
+  --color-medisync-purple: #7c6fd6;
+  --color-medisync-purple-light: #b8b0e8;
+}
+
+/* 
+  ========================================================================
+  NATIVE CSS VARIABLE ROOT
+  ========================================================================
+*/
+:root {
+  --accent: #00a89e;
+  --accent-bg: #e0f2f1;
+  --accent-border: #4db6ac;
+  --border: #e5ebeb;
+  --text-h: #333333;
+  --social-bg: #f4f7f6;
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 /* 
@@ -51,6 +79,12 @@
   /* Structural headings configuration matching Figma sizing constraints */
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-display);
+    color: #0f172a;
+    letter-spacing: -0.025em;
     @apply font-bold text-slate-900 tracking-tight;
   }
+}
+
+* {
+  box-sizing: border-box;
 }
