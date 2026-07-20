@@ -222,7 +222,7 @@ const PharmacistLayout = () => {
         </aside>
 
         {/* DYNAMIC VIEWS HOOK */}
-        <main className="flex-1 p-8 overflow-y-auto min-w-0">
+      <main className="flex-1 h-[calc(100vh-5rem)] overflow-y-auto p-8 min-w-0">
           <Outlet />
         </main>
 

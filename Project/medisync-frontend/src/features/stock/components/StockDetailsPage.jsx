@@ -1,9 +1,26 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FaBoxesStacked } from "react-icons/fa6";
 const StockDetailsPage = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [showFilter,setShowFilter]=useState(false);
     const [statusFilter,setStatusFilter]=useState("All");
+    const filterRef = useRef(null);
+    useEffect(() => {
+            const handleClickOutside = (event) => {
+                if (
+                    filterRef.current &&
+                    !filterRef.current.contains(event.target)
+                ) {
+                    setShowFilter(false);
+                }
+            };
+
+            document.addEventListener("mousedown", handleClickOutside);
+
+            return () => {
+                document.removeEventListener("mousedown", handleClickOutside);
+            };
+        }, []);
     const medicines = [
         {
             id: 1,
@@ -104,24 +121,26 @@ const StockDetailsPage = () => {
     return (
         <div className="space-y-5 animate-fadeIn">
         {/* PAGE TITLE */}
-        <div className="bg-white rounded-xl border border-slate-200 px-6 py-4 shadow-sm">
-            <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-3">
+        <div className="bg-white rounded-xl border border-slate-200 px-6 sm:px-6 py-4 shadow-sm">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-800 flex items-center gap-3">
                 <FaBoxesStacked className="text-brand-secondary text-xl" />
             Stock Details
             </h2>
         </div>
 
         {/* SEARCH BAR */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex justify-between items-center">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col sm:flex-row gap-4 sm:justify-between sm:items-center">
             <input
             type="text"
             placeholder="Search by name, category, company..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-96 px-4 py-2 bg-slate-100 rounded-lg outline-none border border-transparent focus:border-brand-secondary"
+           className="w-full sm:w-96 px-4 py-2 bg-slate-100 rounded-lg outline-none border border-transparent focus:border-brand-secondary"
             />
 
-            <div className="relative">
+            <div 
+              ref={filterRef}
+            className="relative self-start sm:self-auto">
                 <button
                     onClick={() => setShowFilter(!showFilter)}
                     className="px-4 py-2 bg-slate-100 rounded-lg text-slate-600 font-medium hover:bg-slate-200 transition"
@@ -177,10 +196,10 @@ const StockDetailsPage = () => {
 
         {/* TABLE */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="overflow-x-auto">
-            <table className="w-full">
+            <div className="overflow-x-auto scrollbar-thin">
+            <table className="min-w-[900px] w-full">
                 <thead className="bg-slate-50">
-                <tr className="text-left text-sm text-slate-600">
+                <tr className="text-left text-xs sm:text-sm text-slate-600">
                     <th className="px-6 py-4">Medicine Name</th>
                     <th className="px-6 py-4">Category</th>
                     <th className="px-6 py-4">Company Name</th>
