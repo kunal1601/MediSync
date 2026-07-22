@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios'; // Ensure axios is installed or imported from your axios instance
 
-/**
- * Controller Hook: Coordinates Login visual state and local form validation.
- */
 export const useAdminLogin = () => {
   const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     login: '',
     password: '',
     rememberMe: false,
   });
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Handle Input Changes
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
@@ -22,25 +23,51 @@ export const useAdminLogin = () => {
     }));
   };
 
+  // Real API Authentication Handshake
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
 
-    // Frontend performance simulation
-    await new Promise((resolve) => setTimeout(resolve, 800));
+    try {
+      // 1. Send Login Payload to Spring Boot AuthController
+      const response = await axios.post('http://localhost:8080/api/auth/login', {
+        email: formData.login, // Backend expects 'email'
+        password: formData.password,
+      });
 
-    if (formData.login && formData.password) {
-      // Transition directly to the dashboard track
-      navigate('/dashboard/owner');
-    } else {
-      setError('Please enter valid credentials.');
+      const { token, role, name, email } = response.data;
+
+      // 2. Validate Role Authorization
+      if (role !== 'ADMIN') {
+        setError('Access denied. This portal is strictly for Admin personnel.');
+        setIsLoading(false);
+        return;
+      }
+
+      // 3. Store Real Auth Credentials in LocalStorage
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', role);
+      localStorage.setItem('userName', name);
+      localStorage.setItem('userEmail', email);
+
+      // 4. Navigate to Admin Dashboard
+      navigate('/dashboard/admin');
+    } catch (err) {
+      // 5. Handle HTTP 401 Unauthorized or Connection Failures
+      if (err.response && err.response.status === 401) {
+        setError('Invalid email or password. Please try again.');
+      } else {
+        setError('Unable to connect to MediSync server. Check if backend is running on port 8080.');
+      }
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
+  // Optional Mock SSO handler
   const handleGoogleSsoMock = () => {
-    console.log('Initiating Google SSO Flow (Mock)');
+    setError('Google SSO is currently disabled. Please sign in with email and password.');
   };
 
   return {

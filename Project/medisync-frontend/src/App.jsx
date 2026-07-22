@@ -3,13 +3,25 @@ import AdminLoginPage from './features/auth/components/AdminLoginPage';
 import PharmacistLoginPage from './features/auth/components/PharmacistLoginPage';
 import AdminLayout from './layouts/AdminLayout';
 import PharmacistLayout from './layouts/PharmacistLayout';
-import OwnerDashboardPage from './features/dashboard/components/OwnerDashboardPage';
-import PharmacistDashboardPage from './features/dashboard/components/PharmacistDashboardPage';
 
+// Dashboards
+import Dashboard from './features/dashboard/AdminDashboard/Dashboard';
+import PharmacistDashboardPage from './features/dashboard/PharmacistDahboard/PharmacistDashboardPage';
+
+// Pharmacist Features
 import BillingPage from './features/billing/components/BillingPage';
 import StockDetailsPage from "./features/stock/components/StockDetailsPage";
 import AddMedicinePage from "./features/stock/components/AddMedicinePage";
 import PharmacistAlertsPage from './features/alerts/components/PharmacistAlertsPage';
+import BillHistoryPage from "./features/billing/components/BillHistoryPage";
+
+// Admin Sub-pages
+import ManagePharmacist from './features/dashboard/AdminDashboard/pages/ManagePharmacist';
+import Alerts from './features/dashboard/AdminDashboard/pages/Alerts';
+import Billings from './features/dashboard/AdminDashboard/pages/Billings';
+import Inventory from './features/dashboard/AdminDashboard/pages/Inventory';
+import Settings from './features/dashboard/AdminDashboard/pages/Settings';
+import ManageAdmins from './features/dashboard/AdminDashboard/pages/ManageAdmins';
 
 function App() {
   return (
@@ -22,14 +34,18 @@ function App() {
         <Route path="/login/pharmacist" element={<PharmacistLoginPage />} />
 
         {/* MASTER ADMIN CHANNELS */}
-        <Route path="/dashboard" element={<AdminLayout />}>
-          <Route path="owner" element={<OwnerDashboardPage />} />
-          <Route path="manage-pharmacist" element={<div className="text-left font-bold text-slate-700">Manage Pharmacist View Panel</div>} />
-          <Route path="alerts" element={<div className="text-left font-bold text-slate-700">System Notification Activity Logs</div>} />
-          <Route path="billings" element={<div className="text-left font-bold text-slate-700">Pharmacy Invoices Master Register</div>} />
-          <Route path="settings" element={<div className="text-left font-bold text-slate-700">System Parameters Core Settings</div>} />
-          <Route path="manage-admins" element={<div className="text-left font-bold text-slate-700">Admin Privileges Controller Space</div>} />
-          <Route path="inventory-status" element={<div className="text-left font-bold text-slate-700">Pharmacy Medical Supply Matrix</div>} />
+        <Route path="/dashboard/admin" element={<AdminLayout />}>
+          {/* 🌟 Default view when visiting /dashboard/admin */}
+          <Route index element={<Dashboard />} />
+
+          <Route path="manage-pharmacist" element={<ManagePharmacist />} />
+          <Route path="alerts" element={<Alerts />} />
+          <Route path="billings" element={<Billings />} />
+          <Route path="settings" element={<Navigate to="/dashboard/settings/profile" replace />} />
+          <Route path="settings/:section" element={<Settings />} />
+          <Route path="manage-admins" element={<ManageAdmins />} />
+          <Route path="manage-admins/:section" element={<ManageAdmins />} />
+          <Route path="inventory-status" element={<Inventory />} />
         </Route>
 
         {/* MASTER PHARMACIST CHANNELS */}
@@ -38,12 +54,16 @@ function App() {
             <Route index element={<PharmacistDashboardPage />} />
             <Route path="billing" element={<BillingPage />} />
           <Route path="stock-details" element={<StockDetailsPage />} />
+<<<<<<< HEAD
           <Route
             path="stock-details/add"
             element={<AddMedicinePage />}
           />
 
           <Route path="history" element={<div>...</div>} />
+=======
+          <Route path="history" element={<BillHistoryPage />} />
+>>>>>>> origin/main
           <Route path="alerts" element={<PharmacistAlertsPage />} />
         </Route>
        
