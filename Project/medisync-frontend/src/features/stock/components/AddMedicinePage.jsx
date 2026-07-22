@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCapsules } from "react-icons/fa6";
+import { toast } from "react-toastify";
 
 const AddMedicinePage = () => {
   const navigate = useNavigate();
@@ -30,9 +31,11 @@ const AddMedicinePage = () => {
     // TODO:
     // await addMedicine(medicine);
 
-    alert("Medicine Saved Successfully");
+    toast.success("Medicine saved successfully!");
 
-    navigate("/dashboard/pharmacist/stock-details");
+setTimeout(() => {
+  navigate("/dashboard/pharmacist/stock-details");
+}, 1200);
   };
 
   return (
