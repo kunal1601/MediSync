@@ -3,7 +3,7 @@ import {
   Bell,
   AlertTriangle,
   Info,
-  CheckCircle2,
+  CheckCircle,
   XCircle,
 } from 'lucide-react'
 import SectionCard from '../Widgets/SectionCard'

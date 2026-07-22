@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Users } from 'lucide-react'
 import {
   PieChart,
@@ -81,7 +80,7 @@ function ProfitLossChart() {
   return (
     <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-center">
       <div className="relative h-52 w-52">
-        <ResponsiveContainer width="100%" height="100%">
+        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
           <PieChart>
             <Pie
               data={profitLossData}
@@ -160,7 +159,7 @@ function StockBarChart({ data, activeFilter }) {
 
   return (
     <div className="h-72 w-full">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <BarChart data={data} barGap={2} barCategoryGap="18%">
           <defs>
             <pattern
@@ -255,7 +254,7 @@ function IncomeAreaChart({ data, period }) {
 
   return (
     <div className="h-60 w-full">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <AreaChart data={data}>
           <defs>
             <linearGradient id="incomeGrad" x1="0" y1="0" x2="0" y2="1">

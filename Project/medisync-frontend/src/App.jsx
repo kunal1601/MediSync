@@ -36,11 +36,10 @@ function App() {
         <Route path="/dashboard/admin" element={<AdminLayout />}>
           {/* 🌟 Default view when visiting /dashboard/admin */}
           <Route index element={<Dashboard />} />
-
           <Route path="manage-pharmacist" element={<ManagePharmacist />} />
           <Route path="alerts" element={<Alerts />} />
           <Route path="billings" element={<Billings />} />
-          <Route path="settings" element={<Navigate to="/dashboard/settings/profile" replace />} />
+          <Route path="settings" element={<Navigate to="/dashboard/admin/settings/profile" replace />} />
           <Route path="settings/:section" element={<Settings />} />
           <Route path="manage-admins" element={<ManageAdmins />} />
           <Route path="manage-admins/:section" element={<ManageAdmins />} />
