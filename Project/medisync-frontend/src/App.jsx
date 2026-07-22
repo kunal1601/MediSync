@@ -8,6 +8,7 @@ import PharmacistDashboardPage from './features/dashboard/components/PharmacistD
 
 import BillingPage from './features/billing/components/BillingPage';
 import StockDetailsPage from "./features/stock/components/StockDetailsPage";
+import AddMedicinePage from "./features/stock/components/AddMedicinePage";
 import PharmacistAlertsPage from './features/alerts/components/PharmacistAlertsPage';
 
 function App() {
@@ -32,13 +33,20 @@ function App() {
         </Route>
 
         {/* MASTER PHARMACIST CHANNELS */}
-        <Route path="/dashboard/pharmacist" element={<PharmacistLayout />}>
-          <Route index element={<PharmacistDashboardPage />} />
-          <Route path="billing" element={<BillingPage />} />
+        
+          <Route path="/dashboard/pharmacist" element={<PharmacistLayout />}>
+            <Route index element={<PharmacistDashboardPage />} />
+            <Route path="billing" element={<BillingPage />} />
           <Route path="stock-details" element={<StockDetailsPage />} />
-          <Route path="history" element={<div className="text-left font-bold text-slate-700">Completed Store Logs & Invoicing Logs</div>} />
+          <Route
+            path="stock-details/add"
+            element={<AddMedicinePage />}
+          />
+
+          <Route path="history" element={<div>...</div>} />
           <Route path="alerts" element={<PharmacistAlertsPage />} />
         </Route>
+       
 
         <Route path="*" element={<div className="p-8 font-bold text-red-500 text-left">404 - Workspace Area Missing</div>} />
       </Routes>
