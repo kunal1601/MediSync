@@ -33,8 +33,10 @@ function App() {
         <Route path="/login/pharmacist" element={<PharmacistLoginPage />} />
 
         {/* MASTER ADMIN CHANNELS */}
-        <Route path="/dashboard" element={<AdminLayout />}>
-          <Route path="owner" element={<Dashboard />} />
+        <Route path="/dashboard/admin" element={<AdminLayout />}>
+          {/* 🌟 Default view when visiting /dashboard/admin */}
+          <Route index element={<Dashboard />} />
+
           <Route path="manage-pharmacist" element={<ManagePharmacist />} />
           <Route path="alerts" element={<Alerts />} />
           <Route path="billings" element={<Billings />} />

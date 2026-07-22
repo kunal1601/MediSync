@@ -4,6 +4,7 @@ import com.medisync.medisync_backend.entity.Medicine;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -17,7 +18,7 @@ public interface MedicineRepository extends JpaRepository<Medicine, Integer> {
     @Query("SELECT m.category, SUM(m.stockQuantity) FROM Medicine m GROUP BY m.category")
     List<Object[]> getStockCountByCategory();
     
-    // Utility check to flag near-expiry inventory batches
-    @Query("SELECT m FROM Medicine m WHERE m.expiryDate <= CURRENT_DATE + 30")
+    // Utility check to flag near-expiry inventory batches (Fixed using MySQL native date math)
+    @Query(value = "SELECT * FROM medicines WHERE expiry_date <= DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY)", nativeQuery = true)
     List<Medicine> findExpiringMedicinesWithinMonth();
 }
