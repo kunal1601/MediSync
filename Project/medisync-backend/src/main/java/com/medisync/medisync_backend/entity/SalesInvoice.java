@@ -22,10 +22,10 @@ public class SalesInvoice {
     @Column(name = "invoice_number", nullable = false, unique = true, length = 50)
     private String invoiceNumber;
 
-    // Many invoices can be created by a single pharmacist desk profile
+    // 🌟 Updated: Pointing directly to Pharmacist entity and pharmacists(id)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "pharmacist_id", referencedColumnName = "user_id", nullable = true)
-    private User pharmacist;
+    @JoinColumn(name = "pharmacist_id", referencedColumnName = "id", nullable = true)
+    private Pharmacist pharmacist;
 
     @Column(name = "gross_total", nullable = false, precision = 10, scale = 2)
     private BigDecimal grossTotal;
