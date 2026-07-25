@@ -2,16 +2,19 @@ import { useState } from 'react';
 import { usePharmacistLogin } from '../hooks/usePharmacistLogin';
 import Logo from '../../../shared/components/Logo';
 import { Link } from 'react-router-dom'; // 👈 Import Link component
-
+import bg_image from '../../../assets/Background_Image.png';
 const PharmacistLoginPage = () => {
   const { formData, handleChange, handleSubmit, isLoading, error } = usePharmacistLogin();
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-slate-50">
-      <div className="w-full max-w-[500px] bg-white p-12 pt-12 pb-12 rounded-3xl shadow-xl flex flex-col items-center">
+    <div className="min-h-screen w-full flex items-center justify-center p-6 bg-cover bg-center bg-no-repeat  backdrop-blur-md"
+      style={{
+      backgroundImage: `url(${bg_image})`,
+    }}>
+       <div className="w-full max-w-[680px] bg-white p-12 pt-12 pb-12 rounded-3xl shadow-xl flex flex-col items-center">
         
-        <Logo variant="sidebar" className="mb-8 scale-125" />
+        <Logo variant="auth" className="mb-8 scale-125" />
 
         <h1 className="text-4xl font-bold text-slate-900 mb-2 tracking-tight">Pharmacist Credentials</h1>
         <p className="text-slate-500 mb-12 font-medium">Nice to see you again</p>

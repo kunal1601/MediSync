@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import logoImg from '../../assets/Final_logo.JPG';
+import logoImg from '../../assets/Final_Logo2.png';
 
 /**
  * Reusable Logo Component for MediSync
@@ -15,7 +15,7 @@ const Logo = ({ variant = 'navbar', className = '' }) => {
         <img 
           src={logoImg} 
           alt="MediSync Logo" 
-          className="h-16 w-auto object-contain mix-blend-multiply" 
+          className="h-20 w-auto object-contain scale-150  mix-blend-multiply" 
         />
       </div>
     );
