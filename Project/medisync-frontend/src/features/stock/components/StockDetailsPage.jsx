@@ -32,6 +32,74 @@ const StockDetailsPage = () => {
     }
   };
 
+  const renderPageNumbers = () => {
+    const pages = [];
+
+    const start = Math.max(0, currentPage - 2);
+    const end = Math.min(totalPages - 1, currentPage + 2);
+
+    // First Page
+    if (start > 0) {
+      pages.push(
+        <button
+          key={0}
+          onClick={() => setCurrentPage(0)}
+          className="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200"
+        >
+          1
+        </button>,
+      );
+
+      if (start > 1) {
+        pages.push(
+          <span key="start-ellipsis" className="px-2">
+            ...
+          </span>,
+        );
+      }
+    }
+
+    // Middle Pages
+    for (let i = start; i <= end; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => setCurrentPage(i)}
+          className={`px-3 py-2 rounded-lg transition ${
+            currentPage === i
+              ? "bg-brand-primary text-white"
+              : "bg-slate-100 hover:bg-slate-200"
+          }`}
+        >
+          {i + 1}
+        </button>,
+      );
+    }
+
+    // Last Page
+    if (end < totalPages - 1) {
+      if (end < totalPages - 2) {
+        pages.push(
+          <span key="end-ellipsis" className="px-2">
+            ...
+          </span>,
+        );
+      }
+
+      pages.push(
+        <button
+          key={totalPages - 1}
+          onClick={() => setCurrentPage(totalPages - 1)}
+          className="px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200"
+        >
+          {totalPages}
+        </button>,
+      );
+    }
+
+    return pages;
+  };
+
   const filteredMedicines = medicines.filter((medicine) => {
     const matchesSearch =
       `${medicine.medicineName} ${medicine.batchNumber} ${medicine.manufacturer}`
@@ -175,25 +243,43 @@ const StockDetailsPage = () => {
           </table>
         </div>
       </div>
-      <div className="flex items-center justify-between mt-5">
+      <div className="flex items-center justify-center gap-2 mt-6">
+        {/* First */}
         <button
-          onClick={() => setCurrentPage(currentPage - 1)}
-          disabled={!currentPage}
-          className="px-4 py-2 rounded-lg bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
+          onClick={() => setCurrentPage(0)}
+          disabled={currentPage === 0}
+          className="px-3 py-2 rounded-lg bg-slate-100 disabled:opacity-40"
         >
-          Previous
+          ⏮
         </button>
 
-        <span className="font-medium text-slate-600">
-          Page {currentPage + 1} of {totalPages}
-        </span>
+        {/* Previous */}
+        <button
+          onClick={() => setCurrentPage(currentPage - 1)}
+          disabled={currentPage === 0}
+          className="px-3 py-2 rounded-lg bg-slate-100 disabled:opacity-40"
+        >
+          ◀
+        </button>
 
+        {renderPageNumbers()}
+
+        {/* Next */}
         <button
           onClick={() => setCurrentPage(currentPage + 1)}
-          disabled={currentPage + 1 >= totalPages}
-          className="px-4 py-2 rounded-lg bg-brand-primary text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={currentPage === totalPages - 1}
+          className="px-3 py-2 rounded-lg bg-slate-100 disabled:opacity-40"
         >
-          Next
+          ▶
+        </button>
+
+        {/* Last */}
+        <button
+          onClick={() => setCurrentPage(totalPages - 1)}
+          disabled={currentPage === totalPages - 1}
+          className="px-3 py-2 rounded-lg bg-slate-100 disabled:opacity-40"
+        >
+          ⏭
         </button>
       </div>
     </div>
