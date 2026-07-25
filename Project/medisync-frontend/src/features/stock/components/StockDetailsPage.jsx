@@ -10,16 +10,23 @@ const StockDetailsPage = () => {
   const [statusFilter, setStatusFilter] = useState("All");
 
   const [medicines, setMedicines] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [pageSize] = useState(20);
 
   useEffect(() => {
-    loadStocks();
-  }, []);
+    loadStocks(currentPage);
+  }, [currentPage]);
 
-  const loadStocks = async () => {
+  const loadStocks = async (page = 0) => {
     try {
-      const data = await getAllStocks();
-      console.log(data); // Add this line
-      setMedicines(data);
+      const response = await getAllStocks(page, pageSize);
+
+      console.log(response);
+
+      setMedicines(response.data);
+      setCurrentPage(response.currentPage);
+      setTotalPages(response.totalPages);
     } catch (error) {
       console.error(error);
     }
@@ -167,6 +174,27 @@ const StockDetailsPage = () => {
             </tbody>
           </table>
         </div>
+      </div>
+      <div className="flex items-center justify-between mt-5">
+        <button
+          onClick={() => setCurrentPage(currentPage - 1)}
+          disabled={!currentPage}
+          className="px-4 py-2 rounded-lg bg-slate-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Previous
+        </button>
+
+        <span className="font-medium text-slate-600">
+          Page {currentPage + 1} of {totalPages}
+        </span>
+
+        <button
+          onClick={() => setCurrentPage(currentPage + 1)}
+          disabled={currentPage + 1 >= totalPages}
+          className="px-4 py-2 rounded-lg bg-brand-primary text-white disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          Next
+        </button>
       </div>
     </div>
   );

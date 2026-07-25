@@ -8,10 +8,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.medisync.medisync_backend.dto.AddStockRequest;
 import com.medisync.medisync_backend.dto.MedicineStockResponse;
+import com.medisync.medisync_backend.dto.common.PageResponse;
 import com.medisync.medisync_backend.entity.MedicineStock;
 import com.medisync.medisync_backend.service.MedicineStockService;
 
@@ -40,9 +42,12 @@ public class MedicineStockController {
     }
     
     @GetMapping
-    public ResponseEntity<List<MedicineStockResponse>> getAllStocks() {
+    public ResponseEntity<PageResponse<MedicineStockResponse>> getAllStocks(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+
         return ResponseEntity.ok(
-                medicineStockService.getAllStocks()
+                medicineStockService.getAllStocks(page, size)
         );
     }
 

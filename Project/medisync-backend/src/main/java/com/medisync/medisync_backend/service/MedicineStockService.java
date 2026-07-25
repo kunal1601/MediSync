@@ -4,11 +4,15 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.medisync.medisync_backend.dto.AddStockRequest;
 import com.medisync.medisync_backend.dto.MedicineStockResponse;
+import com.medisync.medisync_backend.dto.common.PageResponse;
 import com.medisync.medisync_backend.entity.Medicine;
 import com.medisync.medisync_backend.entity.MedicineStock;
 import com.medisync.medisync_backend.repository.MedicineRepository;
@@ -19,7 +23,7 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class MedicineStockService {
+public class MedicineStockService {	
 
     private final MedicineRepository medicineRepository;
     private final MedicineStockRepository medicineStockRepository;
@@ -134,12 +138,28 @@ public class MedicineStockService {
     }
     
     @Transactional(readOnly = true)
-    public List<MedicineStockResponse> getAllStocks() {
+    public PageResponse<MedicineStockResponse> getAllStocks(int page, int size) {
 
-    	return medicineStockRepository.findAllOrderByMedicineName()
-                .stream()
-                .map(this::convertToResponse)
-                .toList();
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<MedicineStock> stockPage =
+                medicineStockRepository.findAllOrderByMedicineName(pageable);
+
+        List<MedicineStockResponse> response =
+                stockPage.getContent()
+                        .stream()
+                        .map(this::convertToResponse)
+                        .toList();
+
+        return PageResponse.<MedicineStockResponse>builder()
+                .data(response)
+                .currentPage(stockPage.getNumber())
+                .pageSize(stockPage.getSize())
+                .totalElements(stockPage.getTotalElements())
+                .totalPages(stockPage.getTotalPages())
+                .hasNext(stockPage.hasNext())
+                .hasPrevious(stockPage.hasPrevious())
+                .build();
     }
 
 }

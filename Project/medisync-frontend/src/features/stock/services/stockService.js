@@ -5,7 +5,13 @@ export const addStock = async (stockData) => {
     return response.data;
 };
 
-export const getAllStocks = async () => {
-    const response = await API.get("/stocks");
+export const getAllStocks = async (page = 0, size = 20) => {
+    const response = await API.get("/stocks", {
+        params: {
+            page,
+            size
+        }
+    });
+
     return response.data;
 };
