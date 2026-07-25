@@ -38,4 +38,14 @@ public interface MedicineStockRepository extends JpaRepository<MedicineStock, In
         GROUP BY ms.medicine.category
         """)
     List<Object[]> getStockCountByCategory();
+    
+    
+    //custom query for sorting
+    @Query("""
+    	    SELECT ms
+    	    FROM MedicineStock ms
+    	    JOIN FETCH ms.medicine m
+    	    ORDER BY m.name ASC
+    	    """)
+    	List<MedicineStock> findAllOrderByMedicineName();
 }

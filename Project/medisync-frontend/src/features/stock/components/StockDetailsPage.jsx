@@ -51,7 +51,7 @@ const StockDetailsPage = () => {
       <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex justify-between items-center">
         <input
           type="text"
-          placeholder="Search by name, category, company..."
+          placeholder="Search by name, batch, manufacturer"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-96 px-4 py-2 bg-slate-100 rounded-lg outline-none border border-transparent focus:border-brand-secondary"

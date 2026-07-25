@@ -116,7 +116,7 @@ public class MedicineStockService {
 
         if (stock.getExpiryDate().isBefore(today)) {
             status = "Expired";
-        } else if (!stock.getExpiryDate().isAfter(today.plusMonths(2))) {
+        } else if (!stock.getExpiryDate().isAfter(today.plusMonths(1))) {
             status = "Near Expiry";
         } else {
             status = "Fresh";
@@ -136,7 +136,7 @@ public class MedicineStockService {
     @Transactional(readOnly = true)
     public List<MedicineStockResponse> getAllStocks() {
 
-        return medicineStockRepository.findAll()
+    	return medicineStockRepository.findAllOrderByMedicineName()
                 .stream()
                 .map(this::convertToResponse)
                 .toList();

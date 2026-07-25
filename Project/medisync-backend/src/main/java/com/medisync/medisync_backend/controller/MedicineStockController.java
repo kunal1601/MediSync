@@ -33,7 +33,6 @@ public class MedicineStockController {
     public ResponseEntity<MedicineStock> addStock(
             @Valid @RequestBody AddStockRequest request) {
     	
-    	 System.out.println("========== CONTROLLER HIT ==========");
 
         MedicineStock stock = medicineStockService.addStock(request);
 
