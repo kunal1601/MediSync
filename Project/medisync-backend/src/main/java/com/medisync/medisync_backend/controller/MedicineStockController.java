@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.medisync.medisync_backend.dto.AddStockRequest;
+import com.medisync.medisync_backend.dto.MedicineStockResponse;
 import com.medisync.medisync_backend.entity.MedicineStock;
 import com.medisync.medisync_backend.service.MedicineStockService;
 
@@ -37,6 +38,13 @@ public class MedicineStockController {
         MedicineStock stock = medicineStockService.addStock(request);
 
         return new ResponseEntity<>(stock, HttpStatus.CREATED);
+    }
+    
+    @GetMapping
+    public ResponseEntity<List<MedicineStockResponse>> getAllStocks() {
+        return ResponseEntity.ok(
+                medicineStockService.getAllStocks()
+        );
     }
 
     /**

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.medisync.medisync_backend.dto.AddStockRequest;
+import com.medisync.medisync_backend.dto.MedicineStockResponse;
 import com.medisync.medisync_backend.entity.Medicine;
 import com.medisync.medisync_backend.entity.MedicineStock;
 import com.medisync.medisync_backend.repository.MedicineRepository;
@@ -91,6 +92,8 @@ public class MedicineStockService {
 
         return medicineStockRepository.save(newStock);
     }
+    
+    
 
     @Transactional(readOnly = true)
     public List<MedicineStock> getExpiringMedicines() {
@@ -103,6 +106,40 @@ public class MedicineStockService {
     public List<Object[]> getStockAnalyticsData() {
 
         return medicineStockRepository.getStockCountByCategory();
+    }
+    
+    private MedicineStockResponse convertToResponse(MedicineStock stock) {
+
+        LocalDate today = LocalDate.now();
+
+        String status;
+
+        if (stock.getExpiryDate().isBefore(today)) {
+            status = "Expired";
+        } else if (!stock.getExpiryDate().isAfter(today.plusMonths(2))) {
+            status = "Near Expiry";
+        } else {
+            status = "Fresh";
+        }
+
+        return MedicineStockResponse.builder()
+                .stockId(stock.getStockId())
+                .medicineName(stock.getMedicine().getName())
+                .batchNumber(stock.getBatchNumber())
+                .manufacturer(stock.getMedicine().getManufacturer())
+                .stockQuantity(stock.getStockQuantity())
+                .expiryDate(stock.getExpiryDate())
+                .status(status)
+                .build();
+    }
+    
+    @Transactional(readOnly = true)
+    public List<MedicineStockResponse> getAllStocks() {
+
+        return medicineStockRepository.findAll()
+                .stream()
+                .map(this::convertToResponse)
+                .toList();
     }
 
 }
