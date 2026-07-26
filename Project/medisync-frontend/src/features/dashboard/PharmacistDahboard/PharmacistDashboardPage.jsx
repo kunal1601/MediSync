@@ -1,25 +1,79 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Calendar from "react-calendar";
 import "../styles/style.css";
 import "react-calendar/dist/Calendar.css";
+import { getStockOverview } from "./Services/StockOverview";
+import { getTopSellingMedicines } from "./Services/TopSellingMedicine";
 /**
  * View Component: Pharmacist Interactive Analytics Panel
  * Renders filter controls and stock tracking charts matching image_0f704d.png
  */
+
 const PharmacistDashboardPage = () => {
-  const [activeFilter, setActiveFilter] = useState('By Most Sold');
+  const [activeFilter, setActiveFilter] = useState('By Drug Type');
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const filterTabs = ['By Drug Type', 'By Company Name', 'By year', 'By Most Sold'];
+  const [topSellingMedicine,setTopSellingMedicine]=useState([]);
+  const filterTabs=[
+        "By Drug Type",
+        "By Company Name",
+        "By Year",
+        "By Most Sold"
+        ];
 
   // Data map replicating the dynamic visual values in the design chart
-  const chartData = [
-    { category: 'Tablets', value: 450, total: 4800, color: 'bg-[#5bc0be]' },
-    { category: 'Ointments', value: 400, total: 4800, color: 'bg-[#5bc0be]' },
-    { category: 'Drops', value: 400, total: 4800, color: 'bg-[#5bc0be]' },
-    { category: 'Injections', value: 420, total: 4800, color: 'bg-[#5bc0be]' },
-    { category: 'Capsules', value: 3950, total: 4800, color: 'bg-[#5bc0be]', pattern: true },
-    { category: 'Syrups', value: 4800, total: 4800, color: 'bg-[#5bc0be]' },
-  ];
+  const [chartData,setChartData]=useState([]);
+    useEffect(() => {
+
+    fetchStockOverview("drug");
+    fetchTopSellingMedicine();
+
+    }, []);
+    
+    const fetchStockOverview = async (filter) => {
+
+    try {
+
+        const data = await getStockOverview(filter);
+        console.log(data);
+        const colors = [
+            "bg-teal-400",
+            "bg-cyan-400",
+            "bg-blue-400",
+            "bg-violet-400",
+            "bg-pink-400",
+            "bg-green-400"
+        ];
+
+        const maxSales =
+                data.length>0
+                ? Math.max(...data.map(item=>item.sales))
+                :1;
+
+        const formatted = data.map((item, index) => ({
+            category: item.label,
+            value: item.sales,
+            total: maxSales,
+            color: colors[index % colors.length],
+            pattern: index % 2 === 0
+        }));
+
+        setChartData(formatted);
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+};
+    const fetchTopSellingMedicine=async()=>{
+        try{
+            const data= await getTopSellingMedicines();
+            setTopSellingMedicine(data);
+        }catch(err){
+            console.error("Error in Fetching data",err);
+        }
+    };
 
   return (
     <div className="space-y-6 animate-fadeIn text-left">
@@ -201,15 +255,10 @@ const PharmacistDashboardPage = () => {
 
         <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
 
-            {[
-                { name: "Crocin Advance", sold: 450 },
-                { name: "Paracetamol", sold: 390 },
-                { name: "Dolo 650", sold: 350 },
-                { name: "Azithromycin", sold: 280 }
-            ].map((medicine) => (
+            {topSellingMedicine.map((medicine) => (
 
                 <div
-                    key={medicine.name}
+                    key={medicine.medicineName}
                     className="
                         p-5
                         rounded-xl
@@ -219,11 +268,11 @@ const PharmacistDashboardPage = () => {
                     "
                 >
                     <p className="font-semibold text-slate-800">
-                        {medicine.name}
+                        {medicine.medicineName}
                     </p>
 
                     <p className="mt-2 text-brand-secondary font-bold text-xl">
-                        {medicine.sold}
+                        {medicine.unitsSold}
                     </p>
 
                     <p className="text-xs text-slate-400">
@@ -259,7 +308,35 @@ const PharmacistDashboardPage = () => {
             {filterTabs.map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveFilter(tab)}
+                onClick={() => {
+
+                    setActiveFilter(tab);
+
+                    if (tab === "By Drug Type") {
+
+                        fetchStockOverview("drug");
+
+                    }
+
+                    else if (tab === "By Company Name") {
+
+                        fetchStockOverview("company");
+
+                    }
+
+                    else if (tab === "By Year") {
+
+                        fetchStockOverview("year");
+
+                    }
+
+                    else if (tab === "By Most Sold") {
+
+                        fetchStockOverview("mostsold");
+
+                    }
+
+                }}
                 className={`px-5 py-2 rounded-full text-sm font-semibold transition border cursor-pointer select-none
                   ${activeFilter === tab
                     ? 'bg-[#66c2bf] text-white border-[#66c2bf] shadow-sm'
