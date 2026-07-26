@@ -10,15 +10,13 @@ import java.util.Optional;
 
 @Repository
 public interface MedicineRepository extends JpaRepository<Medicine, Integer> {
-    
-    // Quick barcode/item lookup method for the smart billing console
-    Optional<Medicine> findByItemCode(String itemCode);
-    
-    // High-performance query to aggregate stock volume for your frontend dashboard chart
-    @Query("SELECT m.category, SUM(m.stockQuantity) FROM Medicine m GROUP BY m.category")
-    List<Object[]> getStockCountByCategory();
-    
-    // Utility check to flag near-expiry inventory batches (Fixed using MySQL native date math)
-    @Query(value = "SELECT * FROM medicines WHERE expiry_date <= DATE_ADD(CURRENT_DATE, INTERVAL 30 DAY)", nativeQuery = true)
-    List<Medicine> findExpiringMedicinesWithinMonth();
+
+	// Quick barcode/item lookup method for the smart billing console
+	Optional<Medicine> findByItemCode(String itemCode);
+
+	// Checks whether a medicine already exists with the same item code(so that if )
+	boolean existsByItemCode(String itemCode);
+	
+
+	
 }

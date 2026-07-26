@@ -26,6 +26,17 @@ public class MedicineService {
     public Optional<Medicine> getMedicineByItemCode(String itemCode) {
         return medicineRepository.findByItemCode(itemCode);
     }
+    
+    //Add medicines
+    @Transactional
+    public Medicine addMedicine(Medicine medicine) {
+
+        if (medicineRepository.existsByItemCode(medicine.getItemCode())) {
+            throw new RuntimeException("Medicine with this Item Code already exists.");
+        }
+
+        return medicineRepository.save(medicine);
+    }
 
     // Save or update an existing inventory item layout
     @Transactional
@@ -33,15 +44,7 @@ public class MedicineService {
         return medicineRepository.save(medicine);
     }
 
-    // High-performance database processing to pull categorical chart matrices
-    @Transactional(readOnly = true)
-    public List<Object[]> getStockAnalyticsData() {
-        return medicineRepository.getStockCountByCategory();
-    }
 
-    // Grab safety list warnings for nearly expired items
-    @Transactional(readOnly = true)
-    public List<Medicine> getExpiringBatches() {
-        return medicineRepository.findExpiringMedicinesWithinMonth();
-    }
+
+   
 }

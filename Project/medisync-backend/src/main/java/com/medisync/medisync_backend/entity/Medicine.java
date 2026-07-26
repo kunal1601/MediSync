@@ -1,10 +1,28 @@
 package com.medisync.medisync_backend.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "medicines")
@@ -15,51 +33,66 @@ import java.time.LocalDateTime;
 @Builder
 public class Medicine {
 
+    // Primary Key
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "medicine_id")
     private Integer medicineId;
 
-    @Column(name = "item_code", nullable = false, unique = true, length = 50)
+    // Unique code used throughout the application
+    @Column(name = "item_code", nullable = false, unique = true)
     private String itemCode;
 
-    @Column(nullable = false, length = 155)
+    // Medicine name
+    @Column(nullable = false)
     private String name;
 
+    // Medicine category
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Category category;
 
-    @Column(name = "batch_number", nullable = false, length = 50)
-    private String batchNumber;
+    // Manufacturer name
+    @Column(nullable = false)
+    private String manufacturer;
 
-    @Column(name = "expiry_date", nullable = false)
-    private LocalDate expiryDate;
-
-    @Column(name = "stock_quantity", nullable = false)
-    private Integer stockQuantity;
-
-    @Column(name = "price_per_unit", nullable = false, precision = 10, scale = 2)
-    private BigDecimal price_per_unit;
-
-    @Column(name = "created_at", updatable = false)
+    // Record creation timestamp
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    /*
+        One Medicine
+              |
+              |
+             Many
+        MedicineStock
+
+        cascade = ALL
+        -> Saving Medicine also saves its stock records.
+
+        orphanRemoval = true
+        -> Removing a stock object from the list deletes it from DB.
+     */
+    @OneToMany(
+            mappedBy = "medicine",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    @JsonBackReference
+    private List<MedicineStock> stocks = new ArrayList<>();
+
     @PrePersist
-    protected void onCreate() {
+    public void onCreate() {
         createdAt = LocalDateTime.now();
-        if (stockQuantity == null) {
-            stockQuantity = 0;
-        }
     }
 
-    // Inner Enum matching your frontend UI categories precisely
     public enum Category {
         TABLETS,
-        OINTMENTS,
+        CAPSULES,
+        SYRUPS,
         DROPS,
         INJECTIONS,
-        CAPSULES,
-        SYRUPS
+        OINTMENTS
     }
 }

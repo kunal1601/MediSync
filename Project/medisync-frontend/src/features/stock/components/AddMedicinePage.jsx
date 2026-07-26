@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaCapsules } from "react-icons/fa6";
 import { toast } from "react-toastify";
+import { addStock } from "../services/stockService";
 
 const AddMedicinePage = () => {
   const navigate = useNavigate();
@@ -9,11 +10,13 @@ const AddMedicinePage = () => {
   const [medicine, setMedicine] = useState({
     itemCode: "",
     name: "",
+    manufacturer: "",
     category: "",
     batchNumber: "",
     expiryDate: "",
     stockQuantity: "",
-    pricePerUnit: "",
+    purchasePrice: "",
+    sellingPrice: "",
   });
 
   const handleChange = (e) => {
@@ -23,24 +26,24 @@ const AddMedicinePage = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    console.log(medicine);
+    try {
+      await addStock(medicine);
 
-    // TODO:
-    // await addMedicine(medicine);
+      toast.success("Medicine added successfully!");
 
-    toast.success("Medicine saved successfully!");
-
-setTimeout(() => {
-  navigate("/dashboard/pharmacist/stock-details");
-}, 1200);
+      setTimeout(() => {
+        navigate("/dashboard/pharmacist/stock-details");
+      }, 1200);
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to add medicine");
+    }
   };
 
   return (
     <div className="space-y-6 animate-fadeIn">
-
       {/* Header */}
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm px-6 py-5">
         <h2 className="text-2xl font-bold flex items-center gap-3 text-slate-800">
@@ -59,7 +62,6 @@ setTimeout(() => {
         className="bg-white rounded-xl border border-slate-200 shadow-sm p-8"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
           {/* Item Code */}
           <div>
             <label className="block mb-2 font-semibold text-slate-700">
@@ -89,6 +91,23 @@ setTimeout(() => {
               value={medicine.name}
               onChange={handleChange}
               placeholder="Enter Medicine Name"
+              className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:border-brand-secondary"
+              required
+            />
+          </div>
+
+          {/* Manufacturer */}
+          <div>
+            <label className="block mb-2 font-semibold text-slate-700">
+              Manufacturer
+            </label>
+
+            <input
+              type="text"
+              name="manufacturer"
+              value={medicine.manufacturer}
+              onChange={handleChange}
+              placeholder="Enter Manufacturer Name"
               className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:border-brand-secondary"
               required
             />
@@ -167,33 +186,45 @@ setTimeout(() => {
             />
           </div>
 
-          {/* Price */}
+          {/* purchase_price */}
           <div>
             <label className="block mb-2 font-semibold text-slate-700">
-              Price Per Unit (₹)
+              Purchase Price (₹)
             </label>
 
             <input
               type="number"
-              name="pricePerUnit"
-              value={medicine.pricePerUnit}
+              name="purchasePrice"
+              value={medicine.purchasePrice}
               onChange={handleChange}
-              placeholder="Enter Price"
+              placeholder="Enter Purchase Price"
               className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:border-brand-secondary"
               required
             />
           </div>
+          {/* selling_price */}
+          <div>
+            <label className="block mb-2 font-semibold text-slate-700">
+              Selling Price (₹)
+            </label>
 
+            <input
+              type="number"
+              name="sellingPrice"
+              value={medicine.sellingPrice}
+              onChange={handleChange}
+              placeholder="Enter Selling Price"
+              className="w-full border rounded-lg px-4 py-3 focus:outline-none focus:border-brand-secondary"
+              required
+            />
+          </div>
         </div>
 
         {/* Buttons */}
         <div className="flex justify-end gap-4 mt-10">
-
           <button
             type="button"
-            onClick={() =>
-              navigate("/dashboard/pharmacist/stock-details")
-            }
+            onClick={() => navigate("/dashboard/pharmacist/stock-details")}
             className="px-6 py-3 rounded-lg border border-slate-300 hover:bg-slate-100 font-semibold"
           >
             Cancel
@@ -205,7 +236,6 @@ setTimeout(() => {
           >
             Save Medicine
           </button>
-
         </div>
       </form>
     </div>
