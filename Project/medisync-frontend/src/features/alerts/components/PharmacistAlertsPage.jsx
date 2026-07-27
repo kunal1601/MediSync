@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import API from "../../../api/axios";
+
 import {
   FaBell,
   FaClipboardList,
@@ -9,26 +11,7 @@ const PharmacistAlertsPage = () => {
     // Controls custom request type dropdown visibility
     const [showDropdown, setShowDropdown] = useState(false);
     // Stores all requests sent to Admin and their statuses
-    const [requests, setRequests] = useState([
-        {
-            id: 1,
-            medicine: "Volini Gel",
-            requestType: "Restock Request",
-            status: "Pending"
-        },
-        {
-            id: 2,
-            medicine: "Crocin Advance",
-            requestType: "Customer Demand",
-            status: "Approved"
-        },
-        {
-            id: 3,
-            medicine: "Dolo 650",
-            requestType: "Special Order",
-            status: "Rejected"
-        }
-    ]);
+   const [requests, setRequests] = useState([]);
     // Stores data entered in the Raise New Request form
     const [newRequest, setNewRequest] = useState({
         medicine: "",
@@ -37,79 +20,125 @@ const PharmacistAlertsPage = () => {
         message: ""
     });
     // System-generated alerts automatically detected by inventory system
-    const systemAlerts = [
-        {
-            id: 1,
-            medicine: "Paracetamol 500mg",
-            alertType: "Out Of Stock",
-            severity: "High"
-        },
-        {
-            id: 2,
-            medicine: "Amoxicillin 250mg",
-            alertType: "Near Expiry",
-            severity: "Medium"
-        },
-        {
-            id: 3,
-            medicine: "Pantoprazole",
-            alertType: "Expired",
-            severity: "High"
-        }
-    ];
+   const [systemAlerts, setSystemAlerts] = useState([]);
+    
+    useEffect(() => {
+    loadAlerts();
+    loadRequests();
+}, []);
+
+const loadAlerts = async () => {
+
+    try {
+
+        const response = await API.get("/alerts/system");
+
+        setSystemAlerts(response.data);
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+};
+
+const loadRequests = async () => {
+
+    try {
+
+        const response = await API.get("/alerts/requests");
+
+        console.log("Requests Response:", response.data);
+
+        setRequests(response.data);
+
+    } catch (error) {
+
+        console.error(error);
+
+    }
+
+};
+      
      // Handles manual request submission by pharmacist
-    const handleSubmit = () => {
+   const handleSubmit = async () => {
+    console.log("Button Clicked");
+    if (!newRequest.medicine.trim()) {
+        alert("Medicine name is required");
+        return;
+    }
 
-        if (!newRequest.medicine.trim()) return;
+    try {
 
-        if (
-            newRequest.requestType === "Other" &&
-            !newRequest.customRequestType.trim()
-        ) {
-            alert("Please specify the request type");
-            return;
-        }
-        const request = {
-            id: Date.now(),
-            medicine: newRequest.medicine,
-            requestType: newRequest.requestType === "Other"
-            ? newRequest.customRequestType
-            : newRequest.requestType,
-            status: "Pending"
+        const payload = {
+
+            medicineId: null,
+
+            medicineName: newRequest.medicine,
+
+            alertType: newRequest.requestType
+                .toUpperCase()
+                .replace(/ /g, "_"),
+
+            description: newRequest.message
+
         };
-        // Add new request at the top of request list
-        setRequests([request, ...requests]);
-        // Clear form after successful submission
+
+        await API.post("/alerts/request", payload);
+
+        await loadRequests();
+
         setNewRequest({
             medicine: "",
             requestType: "Restock Request",
             customRequestType: "",
             message: ""
         });
-    };
+
+    } catch (error) {
+
+    console.log("Full Error:", error);
+
+    console.log("Response:", error.response);
+
+    console.log("Data:", error.response?.data);
+
+    console.log("Status:", error.response?.status);
+
+    alert("Failed to send request");
+}
+
+};
      // Sends a system-generated alert to Admin as a request
-    const sendAlertToAdmin = (alert) => {
-        // Check whether the same alert was already sent
-        const alreadySent = requests.some(
-            (request) =>
-                request.medicine === alert.medicine &&
-                request.requestType === alert.alertType
-        );
+   const sendAlertToAdmin = async (alert) => {
 
-        if (alreadySent) {
-            alert("Request already sent to Admin");
-            return;
-        }
-        // Add alert-based request to request table
-        const request = {
-            id: Date.now(),
-            medicine: alert.medicine,
-            requestType: alert.alertType,
-            status: "Pending"
-        };
+    console.log("Clicked Alert:", alert);
 
-        setRequests([request, ...requests]);
-    };
+    try {
+
+        console.log("Calling API...");
+
+        const response = await API.put(`/alerts/${alert.alertId}/send`);
+
+        console.log("Success:", response.data);
+
+        await loadAlerts();
+
+        await loadRequests();
+
+    } catch (error) {
+
+        console.log("Error:", error);
+
+        console.log("Status:", error.response?.status);
+
+        console.log("Data:", error.response?.data);
+
+    }
+
+};
+
 
     return (
         <div className="space-y-6 animate-fadeIn">
@@ -135,30 +164,31 @@ const PharmacistAlertsPage = () => {
 
                     {systemAlerts.map((alert) => (
                        <div
-                            key={alert.id}
+                            key={alert.alertId}
                            className="border border-slate-100 rounded-lg p-4 flex justify-between items-center hover:bg-slate-50 transition-all duration-200" >
                         <div>
-                            <p className="font-semibold">
-                                {alert.medicine}
+                           <p className="font-semibold">
+                              {alert.medicineName}
                             </p>
 
                             <p className="text-sm text-slate-500">
-                                {alert.alertType}
-                            </p>
+                                {alert.description}
+                                </p>
                         </div>
 
                     <div className="flex items-center gap-3">
 
-                        <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold
-                            ${
-                                alert.severity === "High"
-                                    ? "bg-red-100 text-red-600"
-                                    : "bg-orange-100 text-orange-600"
-                            }`}
+                     <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold
+                         ${
+                             alert.alertType === "OUT_OF_STOCK" ||
+                             alert.alertType === "EXPIRED"
+                              ? "bg-red-100 text-red-600"
+                             : "bg-orange-100 text-orange-600"
+                          }`}
                         >
-                            {alert.severity}
-                        </span>
+                        {alert.alertType}
+                    </span>
 
                         <button
                             onClick={() => sendAlertToAdmin(alert)}
@@ -213,16 +243,16 @@ const PharmacistAlertsPage = () => {
                             {requests.map((request) => (
 
                                 <tr
-                                    key={request.id}
+                                    key={request.alertId}
                                     className="border-t border-slate-100 hover:bg-slate-50 transition-all duration-200
 "
                                 >
                                     <td className="px-6 py-4">
-                                        {request.medicine}
+                                        {request.medicineName}
                                     </td>
 
                                     <td className="px-6 py-4">
-                                        {request.requestType}
+                                        {request.alertType}
                                     </td>
 
                                     <td className="px-6 py-4">
