@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import com.medisync.medisync_backend.entity.SalesInvoiceItem;
 
 public interface TopSellingMedicineRepository extends JpaRepository<SalesInvoiceItem, Integer> {
-
+	//retrieve Top 4 selling medicines
 	@Query(value="""
 			SELECT m.name, SUM(sii.quantity) AS totalSold
 			FROM sales_invoice_items sii

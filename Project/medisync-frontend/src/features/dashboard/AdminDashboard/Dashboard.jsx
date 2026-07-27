@@ -33,6 +33,21 @@ const formatCurrency = (n) =>
     maximumFractionDigits: 0,
   }).format(n)
 
+  const [incomeData, setIncomeData] = useState([]);
+  const [incomePeriod, setIncomePeriod] = useState("Weekly");
+
+  useEffect(() => {
+    fetchIncomeGrowth();
+  }, [incomePeriod]);
+
+  const fetchIncomeGrowth = async () => {
+    try {
+      const data = await getIncomeGrowth(incomePeriod);
+      setIncomeData(data);
+    } catch (error) {
+      console.error("Error fetching income growth:", error);
+    }
+  };
 function PharmacistCard({ item, onView }) {
   return (
     <div className="flex flex-col justify-between rounded-xl border border-medisync-border bg-white p-4 shadow-sm">

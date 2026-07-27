@@ -4,15 +4,30 @@ import "../styles/style.css";
 import "react-calendar/dist/Calendar.css";
 import { getStockOverview } from "./Services/StockOverview";
 import { getTopSellingMedicines } from "./Services/TopSellingMedicine";
+import { getDashboardStatistics } from './Services/DashboardStatistics';
+import { getTodaysAlerts } from './Services/TodaysAlert';
+import { getDailySales } from './Services/Calender';
 /**
  * View Component: Pharmacist Interactive Analytics Panel
  * Renders filter controls and stock tracking charts matching image_0f704d.png
  */
 
+
 const PharmacistDashboardPage = () => {
   const [activeFilter, setActiveFilter] = useState('By Drug Type');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [topSellingMedicine,setTopSellingMedicine]=useState([]);
+  const [todaysAlerts, setTodaysAlerts] = useState([]);
+  const [statistics,setStatistics]=useState( {totalSales: 0,
+    billsToday: 0,
+    lowStockItems: 0,
+    expiringMedicines: 0});
+
+    const [dailySales, setDailySales] = useState({
+    salesToday: 0,
+    billsGenerated: 0,
+    avgBillValue: 0,
+    });
   const filterTabs=[
         "By Drug Type",
         "By Company Name",
@@ -20,15 +35,48 @@ const PharmacistDashboardPage = () => {
         "By Most Sold"
         ];
 
-  // Data map replicating the dynamic visual values in the design chart
-  const [chartData,setChartData]=useState([]);
-    useEffect(() => {
+    // Data map replicating the dynamic visual values in the design chart
+    const [chartData,setChartData]=useState([]);
+        useEffect(() => {
 
-    fetchStockOverview("drug");
-    fetchTopSellingMedicine();
+        fetchStockOverview("drug");
+        fetchTopSellingMedicine();
+        fetchDashboardStatistics();
+        fetchTodaysAlerts();
+        fetchDailySales();
 
-    }, []);
-    
+        }, []);
+        
+        useEffect(() => {
+
+            if (selectedDate) {
+                fetchDailySales(selectedDate);
+            }
+
+        }, [selectedDate]);
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+
+            return `${year}-${month}-${day}`;
+        };
+        const fetchDailySales = async (date) => {
+        try {
+
+            // const formattedDate = date.toISOString().split("T")[0];
+             const formattedDate = formatDate(date);
+            console.log(formattedDate);
+            const data = await getDailySales(formattedDate);
+
+            setDailySales(data);
+
+        } catch (err) {
+
+            console.error("Error fetching daily sales", err);
+
+        }
+    };
     const fetchStockOverview = async (filter) => {
 
     try {
@@ -66,6 +114,15 @@ const PharmacistDashboardPage = () => {
     }
 
 };
+
+    const fetchDashboardStatistics=async()=>{
+        try{
+            const data=await getDashboardStatistics();
+            setStatistics(data);
+        }catch(err){
+            console.log(err);
+        }
+    }
     const fetchTopSellingMedicine=async()=>{
         try{
             const data= await getTopSellingMedicines();
@@ -73,6 +130,21 @@ const PharmacistDashboardPage = () => {
         }catch(err){
             console.error("Error in Fetching data",err);
         }
+        };
+    const fetchTodaysAlerts = async () => {
+
+        try {
+
+            const data = await getTodaysAlerts();
+
+            setTodaysAlerts(data);
+
+        } catch (err) {
+
+            console.error("Error fetching today's alerts", err);
+
+        }
+
     };
 
   return (
@@ -91,31 +163,32 @@ const PharmacistDashboardPage = () => {
 {/* Statistics Cards */}
 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
 
+
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
         <p className="text-slate-500 text-sm">Total Sales</p>
         <h2 className="text-3xl font-bold text-brand-secondary mt-2">
-            ₹52,450
+            ₹{statistics.totalSales}
         </h2>
     </div>
 
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
         <p className="text-slate-500 text-sm">Bills Today</p>
         <h2 className="text-3xl font-bold text-brand-secondary mt-2">
-            125
+            {statistics.billsToday}
         </h2>
     </div>
 
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
         <p className="text-slate-500 text-sm">Low Stock Items</p>
         <h2 className="text-3xl font-bold text-orange-500 mt-2">
-            12
+            {statistics.lowStockItems}
         </h2>
     </div>
 
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
         <p className="text-slate-500 text-sm">Expiring Medicines</p>
         <h2 className="text-3xl font-bold text-red-500 mt-2">
-            8
+            {statistics.expiringMedicines}
         </h2>
     </div>
 
@@ -133,41 +206,55 @@ const PharmacistDashboardPage = () => {
             </h3>
         </div>
 
-        <div className="p-5 space-y-4 ">
+      <div className="p-5 space-y-4">
 
-            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-brand-secondary/30 hover:shadow-sm transition"
-            >
-                <div>
-                    <p className="font-semibold">Paracetamol 500mg</p>
-                    <p className="text-sm text-slate-500">Out Of Stock</p>
-                </div>
+        {todaysAlerts.length === 0 ? (
 
-                <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-semibold">
-                    High
-                </span>
+            <div className="text-center py-10">
+
+                <p className="text-lg font-semibold text-green-600">
+                    ✅ No Alerts Today
+                </p>
+
+                <p className="text-sm text-slate-500 mt-2">
+                    All medicines are sufficiently stocked and there are no expired or near expiry medicines.
+                </p>
+
             </div>
 
-            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-brand-secondary/30 hover:shadow-sm transition">
-                <div>
-                    <p className="font-semibold">Amoxicillin 250mg</p>
-                    <p className="text-sm text-slate-500">Near Expiry</p>
-                </div>
+        ) : (
 
-                <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-semibold">
-                    Medium
-                </span>
-            </div>
+                todaysAlerts.map((alert, index) => (
 
-             <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-brand-secondary/30 hover:shadow-sm transition">
-               <div>
-                    <p className="font-semibold">Pantoprazole</p>
-                    <p className="text-sm text-slate-500">Expired</p>
-                </div>
+                    <div
+                        key={index}
+                        className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-brand-secondary/30 hover:shadow-sm transition"
+                    >
+                        <div>
+                            <p className="font-semibold">
+                                {alert.medicineName}
+                            </p>
 
-                <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-semibold">
-                    High
-                </span>
-            </div>
+                            <p className="text-sm text-slate-500">
+                                {alert.alertType}
+                            </p>
+                        </div>
+
+                        <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                alert.priority === "High"
+                                    ? "bg-red-100 text-red-600"
+                                    : "bg-orange-100 text-orange-600"
+                            }`}
+                        >
+                            {alert.priority}
+                        </span>
+
+                    </div>
+
+                ))
+
+            )}
 
         </div>
 
@@ -189,7 +276,7 @@ const PharmacistDashboardPage = () => {
         {/* Calendar */}
         <div>
             <Calendar
-                onChange={setSelectedDate}
+                onChange={(date) => setSelectedDate(date)}
                 value={selectedDate}
             />
         </div>
@@ -203,7 +290,7 @@ const PharmacistDashboardPage = () => {
                 </p>
 
                 <h3 className="text-3xl font-bold text-brand-secondary mt-1">
-                    ₹4,850
+                   ₹{dailySales.salesToday}
                 </h3>
             </div>
 
@@ -213,7 +300,7 @@ const PharmacistDashboardPage = () => {
                 </p>
 
                 <h3 className="text-2xl font-bold text-slate-800 mt-1">
-                    42
+                    {dailySales.billsGenerated}
                 </h3>
             </div>
 
@@ -223,7 +310,7 @@ const PharmacistDashboardPage = () => {
                 </p>
 
                 <h3 className="text-2xl font-bold text-slate-800 mt-1">
-                    ₹115
+                    ₹{Number(dailySales.avgBillValue).toFixed(2)}
                 </h3>
             </div>
 
