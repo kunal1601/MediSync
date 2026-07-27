@@ -31,4 +31,6 @@ public interface AlertService {
 
     // Reject Request
     AlertResponseDto rejectRequest(Long alertId);
+    
+    void generateSystemAlerts();
 }

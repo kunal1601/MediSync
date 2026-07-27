@@ -31,4 +31,5 @@ public class AlertRequestDto {
      * Pharmacist notes.
      */
     private String description;
+    
 }

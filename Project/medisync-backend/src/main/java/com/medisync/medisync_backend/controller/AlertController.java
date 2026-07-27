@@ -88,4 +88,12 @@ public class AlertController {
 
         return ResponseEntity.ok(alertService.rejectRequest(alertId));
     }
+    
+    @PostMapping("/generate")
+    public ResponseEntity<String> generateSystemAlerts() {
+
+        alertService.generateSystemAlerts();
+
+        return ResponseEntity.ok("System alerts generated successfully.");
+    }
 }

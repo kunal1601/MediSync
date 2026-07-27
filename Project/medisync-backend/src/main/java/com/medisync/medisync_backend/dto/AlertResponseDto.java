@@ -1,5 +1,6 @@
 package com.medisync.medisync_backend.dto;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import com.medisync.medisync_backend.entity.AlertStatus;
@@ -25,4 +26,10 @@ public class AlertResponseDto {
     private AlertStatus status;
 
     private LocalDateTime createdAt;
+    
+    private Long stockId;
+
+    private String batchNumber;
+
+    private LocalDate expiryDate;
 }

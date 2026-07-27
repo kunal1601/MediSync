@@ -27,6 +27,10 @@ public class Alert {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "medicine_id")
     private Medicine medicine;
+    
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "stock_id")
+    private MedicineStock medicineStock;
 
     // Used only when medicine is not available in inventory
     @Column(name = "requested_medicine_name")

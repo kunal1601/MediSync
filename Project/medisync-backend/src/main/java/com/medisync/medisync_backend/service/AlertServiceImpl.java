@@ -2,10 +2,13 @@ package com.medisync.medisync_backend.service;
 
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.medisync.medisync_backend.entity.AlertType;
+import com.medisync.medisync_backend.entity.MedicineStock;
 import com.medisync.medisync_backend.dto.AlertRequestDto;
 import com.medisync.medisync_backend.dto.AlertResponseDto;
 import com.medisync.medisync_backend.entity.Alert;
@@ -13,6 +16,7 @@ import com.medisync.medisync_backend.entity.AlertStatus;
 import com.medisync.medisync_backend.entity.Medicine;
 import com.medisync.medisync_backend.repository.AlertRepository;
 import com.medisync.medisync_backend.repository.MedicineRepository;
+import com.medisync.medisync_backend.repository.MedicineStockRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -23,6 +27,135 @@ public class AlertServiceImpl implements AlertService {
 
     private final AlertRepository alertRepository;
     private final MedicineRepository medicineRepository;
+    private final MedicineStockRepository medicineStockRepository;
+    
+    @Override
+    @Transactional
+    public void generateSystemAlerts() {
+
+        System.out.println("Inside generateSystemAlerts()");
+
+        generateStockAlerts();
+
+        generateExpiryAlerts();
+
+        System.out.println("Finished generateSystemAlerts()");
+    }
+    
+    
+    private void generateStockAlerts() {
+
+        List<Medicine> medicines = medicineRepository.findAll();
+
+        for (Medicine medicine : medicines) {
+
+            int totalStock = medicine.getStocks()
+                    .stream()
+                    .mapToInt(MedicineStock::getStockQuantity)
+                    .sum();
+
+            AlertType alertType = null;
+
+            if (totalStock == 0) {
+
+                alertType = AlertType.OUT_OF_STOCK;
+
+            } else if (totalStock <= 10) {
+
+                alertType = AlertType.LOW_STOCK;
+            }
+
+            // Stock is healthy
+            if (alertType == null) {
+                continue;
+            }
+
+            // Check if NEW alert already exists
+            boolean alreadyExists = alertRepository
+                    .findByMedicineAndAlertTypeAndStatus(
+                            medicine,
+                            alertType,
+                            AlertStatus.NEW
+                    )
+                    .isPresent();
+
+            if (alreadyExists) {
+                continue;
+            }
+
+            Alert alert = Alert.builder()
+                    .medicine(medicine)
+                    .medicineStock(null)
+                    .alertType(alertType)
+                    .description(
+                            alertType == AlertType.OUT_OF_STOCK
+                                    ? medicine.getName() + " is out of stock."
+                                    : medicine.getName() + " stock is running low."
+                    )
+                    .status(AlertStatus.NEW)
+                    .build();
+
+            alertRepository.save(alert);
+        }
+    }
+
+
+    private void generateExpiryAlerts() {
+
+        LocalDate today = LocalDate.now();
+
+        LocalDate nearExpiryDate = today.plusDays(30);
+
+        List<MedicineStock> stocks = medicineStockRepository.findAll();
+
+        for (MedicineStock stock : stocks) {
+
+            AlertType alertType = null;
+
+            if (stock.getExpiryDate().isBefore(today)) {
+
+                alertType = AlertType.EXPIRED;
+
+            } else if (!stock.getExpiryDate().isAfter(nearExpiryDate)) {
+
+                alertType = AlertType.NEAR_EXPIRY;
+            }
+
+            // Not expired and not near expiry
+            if (alertType == null) {
+                continue;
+            }
+
+            // Duplicate check
+            boolean alreadyExists = alertRepository
+                    .findByMedicineStockAndAlertTypeAndStatus(
+                            stock,
+                            alertType,
+                            AlertStatus.NEW
+                    )
+                    .isPresent();
+
+            if (alreadyExists) {
+                continue;
+            }
+
+            Alert alert = Alert.builder()
+                    .medicine(stock.getMedicine())
+                    .medicineStock(stock)
+                    .alertType(alertType)
+                    .description(
+                            alertType == AlertType.EXPIRED
+                                    ? stock.getMedicine().getName()
+                                            + " (Batch " + stock.getBatchNumber() + ") has expired."
+                                    : stock.getMedicine().getName()
+                                            + " (Batch " + stock.getBatchNumber() + ") will expire within 30 days."
+                    )
+                    .status(AlertStatus.NEW)
+                    .build();
+
+            alertRepository.save(alert);
+        }
+    }
 
     @Override
     @Transactional(readOnly = true)
@@ -154,20 +287,47 @@ public class AlertServiceImpl implements AlertService {
 
         return AlertResponseDto.builder()
                 .alertId(alert.getAlertId())
+
                 .medicineId(
                         alert.getMedicine() != null
                                 ? alert.getMedicine().getMedicineId()
                                 : null
                 )
+
                 .medicineName(
                         alert.getMedicine() != null
                                 ? alert.getMedicine().getName()
                                 : alert.getRequestedMedicineName()
                 )
+
                 .alertType(alert.getAlertType())
+
                 .description(alert.getDescription())
+
                 .status(alert.getStatus())
+
+                // NEW CODE STARTS HERE
+                .stockId(
+                        alert.getMedicineStock() != null
+                                ? alert.getMedicineStock().getStockId()
+                                : null
+                )
+
+                .batchNumber(
+                        alert.getMedicineStock() != null
+                                ? alert.getMedicineStock().getBatchNumber()
+                                : null
+                )
+
+                .expiryDate(
+                        alert.getMedicineStock() != null
+                                ? alert.getMedicineStock().getExpiryDate()
+                                : null
+                )
+                // NEW CODE ENDS HERE
+
                 .createdAt(alert.getCreatedAt())
+
                 .build();
     }
 }
