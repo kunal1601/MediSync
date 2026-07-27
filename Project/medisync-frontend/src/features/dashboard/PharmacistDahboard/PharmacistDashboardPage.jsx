@@ -6,6 +6,7 @@ import { getStockOverview } from "./Services/StockOverview";
 import { getTopSellingMedicines } from "./Services/TopSellingMedicine";
 import { getDashboardStatistics } from './Services/DashboardStatistics';
 import { getTodaysAlerts } from './Services/TodaysAlert';
+import { getDailySales } from './Services/Calender';
 /**
  * View Component: Pharmacist Interactive Analytics Panel
  * Renders filter controls and stock tracking charts matching image_0f704d.png
@@ -22,6 +23,11 @@ const PharmacistDashboardPage = () => {
     lowStockItems: 0,
     expiringMedicines: 0});
 
+    const [dailySales, setDailySales] = useState({
+    salesToday: 0,
+    billsGenerated: 0,
+    avgBillValue: 0,
+    });
   const filterTabs=[
         "By Drug Type",
         "By Company Name",
@@ -29,17 +35,48 @@ const PharmacistDashboardPage = () => {
         "By Most Sold"
         ];
 
-  // Data map replicating the dynamic visual values in the design chart
-  const [chartData,setChartData]=useState([]);
-    useEffect(() => {
+    // Data map replicating the dynamic visual values in the design chart
+    const [chartData,setChartData]=useState([]);
+        useEffect(() => {
 
-    fetchStockOverview("drug");
-    fetchTopSellingMedicine();
-    fetchDashboardStatistics();
-    fetchTodaysAlerts();
+        fetchStockOverview("drug");
+        fetchTopSellingMedicine();
+        fetchDashboardStatistics();
+        fetchTodaysAlerts();
+        fetchDailySales();
 
-    }, []);
-    
+        }, []);
+        
+        useEffect(() => {
+
+            if (selectedDate) {
+                fetchDailySales(selectedDate);
+            }
+
+        }, [selectedDate]);
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, "0");
+            const day = String(date.getDate()).padStart(2, "0");
+
+            return `${year}-${month}-${day}`;
+        };
+        const fetchDailySales = async (date) => {
+        try {
+
+            // const formattedDate = date.toISOString().split("T")[0];
+             const formattedDate = formatDate(date);
+            console.log(formattedDate);
+            const data = await getDailySales(formattedDate);
+
+            setDailySales(data);
+
+        } catch (err) {
+
+            console.error("Error fetching daily sales", err);
+
+        }
+    };
     const fetchStockOverview = async (filter) => {
 
     try {
@@ -239,7 +276,7 @@ const PharmacistDashboardPage = () => {
         {/* Calendar */}
         <div>
             <Calendar
-                onChange={setSelectedDate}
+                onChange={(date) => setSelectedDate(date)}
                 value={selectedDate}
             />
         </div>
@@ -253,7 +290,7 @@ const PharmacistDashboardPage = () => {
                 </p>
 
                 <h3 className="text-3xl font-bold text-brand-secondary mt-1">
-                    ₹4,850
+                   ₹{dailySales.salesToday}
                 </h3>
             </div>
 
@@ -263,7 +300,7 @@ const PharmacistDashboardPage = () => {
                 </p>
 
                 <h3 className="text-2xl font-bold text-slate-800 mt-1">
-                    42
+                    {dailySales.billsGenerated}
                 </h3>
             </div>
 
@@ -273,7 +310,7 @@ const PharmacistDashboardPage = () => {
                 </p>
 
                 <h3 className="text-2xl font-bold text-slate-800 mt-1">
-                    ₹115
+                    ₹{Number(dailySales.avgBillValue).toFixed(2)}
                 </h3>
             </div>
 
