@@ -17,6 +17,7 @@ public interface MedicineRepository extends JpaRepository<Medicine, Integer> {
 	// Checks whether a medicine already exists with the same item code(so that if )
 	boolean existsByItemCode(String itemCode);
 	
+	Optional<Medicine> findByNameIgnoreCase(String name);
 
 	
 }

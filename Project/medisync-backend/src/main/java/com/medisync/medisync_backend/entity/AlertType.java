@@ -2,10 +2,12 @@ package com.medisync.medisync_backend.entity;
 
 public enum AlertType {
 
+    OUT_OF_STOCK,
     LOW_STOCK,
-    CUSTOMER_DEMAND,
-    EXPIRY,
-    RESTOCK_REQUEST,
-    SPECIAL_ORDER
+    NEAR_EXPIRY,
+    EXPIRED,
 
+    RESTOCK_REQUEST,
+    CUSTOMER_DEMAND,
+    SPECIAL_ORDER
 }

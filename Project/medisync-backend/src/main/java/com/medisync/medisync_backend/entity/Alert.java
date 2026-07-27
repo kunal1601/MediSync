@@ -23,43 +23,22 @@ public class Alert {
     @Column(name = "alert_id")
     private Long alertId;
 
-    /*
-     * Existing medicine selected from inventory.
-     * Null when pharmacist requests a completely new medicine.
-     */
+    // Existing medicine (nullable)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "medicine_id")
     private Medicine medicine;
 
-    /*
-     * Used only when the medicine does not exist in inventory.
-     */
-    @Column(name = "requested_medicine_name", length = 150)
+    // Used only when medicine is not available in inventory
+    @Column(name = "requested_medicine_name")
     private String requestedMedicineName;
 
-    /*
-     * LOW_STOCK
-     * RESTOCK_REQUEST
-     * CUSTOMER_DEMAND
-     * SPECIAL_ORDER
-     */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private AlertType alertType;
 
-    /*
-     * Pharmacist request details or
-     * system generated alert description.
-     */
     @Column(nullable = false, length = 1000)
     private String description;
 
-    /*
-     * NEW
-     * PENDING
-     * APPROVED
-     * REJECTED
-     */
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default

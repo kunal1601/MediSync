@@ -16,10 +16,9 @@ public class AlertRequestDto {
     private Integer medicineId;
 
     /*
-     * Used only when medicine is not present
-     * in the inventory.
+     * Medicine typed by pharmacist.
      */
-    private String requestedMedicineName;
+    private String medicineName;
 
     /*
      * RESTOCK_REQUEST
@@ -29,7 +28,7 @@ public class AlertRequestDto {
     private AlertType alertType;
 
     /*
-     * Pharmacist's request details.
+     * Pharmacist notes.
      */
     private String description;
 }
