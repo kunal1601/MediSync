@@ -10,9 +10,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.medisync.medisync_backend.dto.DashboardStatisticsResponse;
 import com.medisync.medisync_backend.dto.StockOverviewResponse;
+import com.medisync.medisync_backend.dto.TodaysAlertResponse;
 import com.medisync.medisync_backend.dto.TopSellingMedicineResponse;
 import com.medisync.medisync_backend.service.PharmacistDashStatisticsService;
 import com.medisync.medisync_backend.service.StockOverviewServiceImpl;
+import com.medisync.medisync_backend.service.TodaysAlertServiceImpl;
 import com.medisync.medisync_backend.service.TopSellingMedicineService;
 
 @RestController
@@ -22,15 +24,17 @@ public class PharmacistDashboardController {
     private final PharmacistDashStatisticsService dashboardStatisticsService;
     private final StockOverviewServiceImpl stockOverviewService;
     private final TopSellingMedicineService topSellingMedicineService;
-
+    private TodaysAlertServiceImpl todaysAlertService;
     public PharmacistDashboardController(
             PharmacistDashStatisticsService dashboardStatisticsService,
             StockOverviewServiceImpl stockOverviewService,
-            TopSellingMedicineService topSellingMedicineService) {
+            TopSellingMedicineService topSellingMedicineService,
+            TodaysAlertServiceImpl todaysAlertService) {
 
         this.dashboardStatisticsService = dashboardStatisticsService;
         this.stockOverviewService = stockOverviewService;
         this.topSellingMedicineService = topSellingMedicineService;
+        this.todaysAlertService=todaysAlertService;
     }
 
     // Dashboard Statistics
@@ -56,5 +60,12 @@ public class PharmacistDashboardController {
 
         return ResponseEntity.ok(
                 topSellingMedicineService.getTopSellingMedicines());
+    }
+    @GetMapping("/alerts")
+    public ResponseEntity<List<TodaysAlertResponse>> getTodaysAlerts() {
+
+        return ResponseEntity.ok(
+                todaysAlertService.getTodaysAlert());
+
     }
 }

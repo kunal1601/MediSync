@@ -5,6 +5,7 @@ import "react-calendar/dist/Calendar.css";
 import { getStockOverview } from "./Services/StockOverview";
 import { getTopSellingMedicines } from "./Services/TopSellingMedicine";
 import { getDashboardStatistics } from './Services/DashboardStatistics';
+import { getTodaysAlerts } from './Services/TodaysAlert';
 /**
  * View Component: Pharmacist Interactive Analytics Panel
  * Renders filter controls and stock tracking charts matching image_0f704d.png
@@ -15,6 +16,7 @@ const PharmacistDashboardPage = () => {
   const [activeFilter, setActiveFilter] = useState('By Drug Type');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [topSellingMedicine,setTopSellingMedicine]=useState([]);
+  const [todaysAlerts, setTodaysAlerts] = useState([]);
   const [statistics,setStatistics]=useState( {totalSales: 0,
     billsToday: 0,
     lowStockItems: 0,
@@ -34,6 +36,7 @@ const PharmacistDashboardPage = () => {
     fetchStockOverview("drug");
     fetchTopSellingMedicine();
     fetchDashboardStatistics();
+    fetchTodaysAlerts();
 
     }, []);
     
@@ -90,6 +93,21 @@ const PharmacistDashboardPage = () => {
         }catch(err){
             console.error("Error in Fetching data",err);
         }
+        };
+    const fetchTodaysAlerts = async () => {
+
+        try {
+
+            const data = await getTodaysAlerts();
+
+            setTodaysAlerts(data);
+
+        } catch (err) {
+
+            console.error("Error fetching today's alerts", err);
+
+        }
+
     };
 
   return (
@@ -151,41 +169,55 @@ const PharmacistDashboardPage = () => {
             </h3>
         </div>
 
-        <div className="p-5 space-y-4 ">
+      <div className="p-5 space-y-4">
 
-            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-brand-secondary/30 hover:shadow-sm transition"
-            >
-                <div>
-                    <p className="font-semibold">Paracetamol 500mg</p>
-                    <p className="text-sm text-slate-500">Out Of Stock</p>
-                </div>
+        {todaysAlerts.length === 0 ? (
 
-                <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-semibold">
-                    High
-                </span>
+            <div className="text-center py-10">
+
+                <p className="text-lg font-semibold text-green-600">
+                    ✅ No Alerts Today
+                </p>
+
+                <p className="text-sm text-slate-500 mt-2">
+                    All medicines are sufficiently stocked and there are no expired or near expiry medicines.
+                </p>
+
             </div>
 
-            <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-brand-secondary/30 hover:shadow-sm transition">
-                <div>
-                    <p className="font-semibold">Amoxicillin 250mg</p>
-                    <p className="text-sm text-slate-500">Near Expiry</p>
-                </div>
+        ) : (
 
-                <span className="bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-xs font-semibold">
-                    Medium
-                </span>
-            </div>
+                todaysAlerts.map((alert, index) => (
 
-             <div className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-brand-secondary/30 hover:shadow-sm transition">
-               <div>
-                    <p className="font-semibold">Pantoprazole</p>
-                    <p className="text-sm text-slate-500">Expired</p>
-                </div>
+                    <div
+                        key={index}
+                        className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-brand-secondary/30 hover:shadow-sm transition"
+                    >
+                        <div>
+                            <p className="font-semibold">
+                                {alert.medicineName}
+                            </p>
 
-                <span className="bg-red-100 text-red-600 px-3 py-1 rounded-full text-xs font-semibold">
-                    High
-                </span>
-            </div>
+                            <p className="text-sm text-slate-500">
+                                {alert.alertType}
+                            </p>
+                        </div>
+
+                        <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                                alert.priority === "High"
+                                    ? "bg-red-100 text-red-600"
+                                    : "bg-orange-100 text-orange-600"
+                            }`}
+                        >
+                            {alert.priority}
+                        </span>
+
+                    </div>
+
+                ))
+
+            )}
 
         </div>
 
