@@ -14,6 +14,10 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     // System Generated Alerts
     List<Alert> findByStatusOrderByCreatedAtDesc(AlertStatus status);
 
+    List<Alert> findByStatusIn(List<AlertStatus> statuses);
+    
+    List<Alert> findByStatus(AlertStatus status);
+    
     // Requests sent to Admin
     List<Alert> findByStatusInOrderByCreatedAtDesc(List<AlertStatus> statuses);
 

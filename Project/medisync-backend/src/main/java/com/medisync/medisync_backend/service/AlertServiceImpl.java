@@ -25,13 +25,27 @@ public class AlertServiceImpl implements AlertService {
     private final MedicineRepository medicineRepository;
 
     @Override
+    @Transactional(readOnly = true)
     public List<AlertResponseDto> getSystemGeneratedAlerts() {
-        return null;
+
+        return alertRepository.findByStatus(AlertStatus.NEW)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AlertResponseDto> getRequestsSentToAdmin() {
-        return null;
+
+        return alertRepository.findByStatusIn(
+                List.of(
+                        AlertStatus.PENDING,
+                        AlertStatus.APPROVED,
+                        AlertStatus.REJECTED))
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     @Override
@@ -79,25 +93,63 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
+    @Transactional
     public AlertResponseDto sendAlertToAdmin(Long alertId) {
-        return null;
+
+        Alert alert = alertRepository.findById(alertId)
+                .orElseThrow(() ->
+                        new RuntimeException("Alert not found with ID : " + alertId));
+
+        if (alert.getStatus() != AlertStatus.NEW) {
+            throw new RuntimeException("Only NEW alerts can be sent to admin.");
+        }
+
+        alert.setStatus(AlertStatus.PENDING);
+
+        return mapToResponse(alertRepository.save(alert));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<AlertResponseDto> getPendingRequests() {
-        return null;
+
+        return alertRepository.findByStatus(AlertStatus.PENDING)
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
     @Override
     public AlertResponseDto approveRequest(Long alertId) {
-        return null;
+
+        Alert alert = alertRepository.findById(alertId)
+                .orElseThrow(() ->
+                        new RuntimeException("Alert not found with ID : " + alertId));
+
+        if (alert.getStatus() != AlertStatus.PENDING) {
+            throw new RuntimeException("Only pending requests can be approved.");
+        }
+
+        alert.setStatus(AlertStatus.APPROVED);
+
+        return mapToResponse(alertRepository.save(alert));
     }
 
     @Override
     public AlertResponseDto rejectRequest(Long alertId) {
-        return null;
+
+        Alert alert = alertRepository.findById(alertId)
+                .orElseThrow(() ->
+                        new RuntimeException("Alert not found with ID : " + alertId));
+
+        if (alert.getStatus() != AlertStatus.PENDING) {
+            throw new RuntimeException("Only pending requests can be rejected.");
+        }
+
+        alert.setStatus(AlertStatus.REJECTED);
+
+        return mapToResponse(alertRepository.save(alert));
     }
-    
     private AlertResponseDto mapToResponse(Alert alert) {
 
         return AlertResponseDto.builder()
