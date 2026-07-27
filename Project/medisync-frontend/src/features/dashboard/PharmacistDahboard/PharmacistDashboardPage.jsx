@@ -4,15 +4,22 @@ import "../styles/style.css";
 import "react-calendar/dist/Calendar.css";
 import { getStockOverview } from "./Services/StockOverview";
 import { getTopSellingMedicines } from "./Services/TopSellingMedicine";
+import { getDashboardStatistics } from './Services/DashboardStatistics';
 /**
  * View Component: Pharmacist Interactive Analytics Panel
  * Renders filter controls and stock tracking charts matching image_0f704d.png
  */
 
+
 const PharmacistDashboardPage = () => {
   const [activeFilter, setActiveFilter] = useState('By Drug Type');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [topSellingMedicine,setTopSellingMedicine]=useState([]);
+  const [statistics,setStatistics]=useState( {totalSales: 0,
+    billsToday: 0,
+    lowStockItems: 0,
+    expiringMedicines: 0});
+
   const filterTabs=[
         "By Drug Type",
         "By Company Name",
@@ -26,6 +33,7 @@ const PharmacistDashboardPage = () => {
 
     fetchStockOverview("drug");
     fetchTopSellingMedicine();
+    fetchDashboardStatistics();
 
     }, []);
     
@@ -66,6 +74,15 @@ const PharmacistDashboardPage = () => {
     }
 
 };
+
+    const fetchDashboardStatistics=async()=>{
+        try{
+            const data=await getDashboardStatistics();
+            setStatistics(data);
+        }catch(err){
+            console.log(err);
+        }
+    }
     const fetchTopSellingMedicine=async()=>{
         try{
             const data= await getTopSellingMedicines();
@@ -91,31 +108,32 @@ const PharmacistDashboardPage = () => {
 {/* Statistics Cards */}
 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
 
+
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
         <p className="text-slate-500 text-sm">Total Sales</p>
         <h2 className="text-3xl font-bold text-brand-secondary mt-2">
-            ₹52,450
+            ₹{statistics.totalSales}
         </h2>
     </div>
 
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
         <p className="text-slate-500 text-sm">Bills Today</p>
         <h2 className="text-3xl font-bold text-brand-secondary mt-2">
-            125
+            {statistics.billsToday}
         </h2>
     </div>
 
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
         <p className="text-slate-500 text-sm">Low Stock Items</p>
         <h2 className="text-3xl font-bold text-orange-500 mt-2">
-            12
+            {statistics.lowStockItems}
         </h2>
     </div>
 
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
         <p className="text-slate-500 text-sm">Expiring Medicines</p>
         <h2 className="text-3xl font-bold text-red-500 mt-2">
-            8
+            {statistics.expiringMedicines}
         </h2>
     </div>
 
