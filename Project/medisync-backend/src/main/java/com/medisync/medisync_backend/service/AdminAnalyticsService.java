@@ -6,15 +6,20 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.medisync.medisync_backend.dto.IncomeGrowthResponse;
+import com.medisync.medisync_backend.dto.ProfitLossResponsedto;
 import com.medisync.medisync_backend.repository.IncomeGrowthRepository;
+import com.medisync.medisync_backend.repository.ProfitLossRepository;
 
 @Service
 public class AdminAnalyticsService {
 	// Repository dependency for fetching income growth data
 	private final IncomeGrowthRepository incomeGrowthRepo;
+	private final ProfitLossRepository profitLossRepo;
 	//Constructor Injection
-	public AdminAnalyticsService(IncomeGrowthRepository incomeGrowthRepo) {
+	public AdminAnalyticsService(IncomeGrowthRepository incomeGrowthRepo,
+			ProfitLossRepository profitLossRepo) {
 		this.incomeGrowthRepo=incomeGrowthRepo;
+		this.profitLossRepo=profitLossRepo;
 	}
 	// Repository dependency for fetching income growth data
 	public List<IncomeGrowthResponse> getIncomeGrowth(String period){
@@ -43,4 +48,31 @@ public class AdminAnalyticsService {
 		}
 		return response;
 	}
+	
+	
+
+
+	
+	    public ProfitLossResponsedto getProfitLoss() {
+
+	        double revenue = profitLossRepo.getTotalRevenue();
+
+	        double cost = profitLossRepo.getTotalCost();
+
+	        double loss = profitLossRepo.getTotalLoss();
+
+	        double profit = revenue - cost - loss;
+
+	        double gain = profit;
+
+	        return new ProfitLossResponsedto
+	        		(
+	                revenue,
+	                profit,
+	                gain,
+	                loss,
+	                cost
+	        );
+
+	    }
 }

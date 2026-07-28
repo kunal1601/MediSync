@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.medisync.medisync_backend.dto.IncomeGrowthResponse;
+import com.medisync.medisync_backend.dto.ProfitLossResponsedto;
 import com.medisync.medisync_backend.service.AdminAnalyticsService;
 
 @RestController
@@ -16,6 +17,7 @@ import com.medisync.medisync_backend.service.AdminAnalyticsService;
 public class AdminDashboardController {
 	
 	private final AdminAnalyticsService adminAnalytics;
+	
 	//Constructor Injection
 	public AdminDashboardController(AdminAnalyticsService adminAnalytics) {
 		this.adminAnalytics=adminAnalytics;
@@ -24,5 +26,10 @@ public class AdminDashboardController {
 	@GetMapping("/income-growth")
 	public ResponseEntity<List<IncomeGrowthResponse>> getIncomeGrowth(@RequestParam(defaultValue="Weekly") String period){
 		return ResponseEntity.ok(adminAnalytics.getIncomeGrowth(period));
+	}
+	
+	@GetMapping("/profit-loss")
+    public ResponseEntity<ProfitLossResponsedto> getProfitLoss() {
+	        return ResponseEntity.ok(adminAnalytics.getProfitLoss());
 	}
 }
