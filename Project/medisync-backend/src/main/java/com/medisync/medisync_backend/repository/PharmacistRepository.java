@@ -17,4 +17,13 @@ public interface PharmacistRepository extends JpaRepository<Pharmacist, Long> {
     Optional<Pharmacist> findByUsernameOrEmail(String username, String email);
 
     List<Pharmacist> findByEmploymentStatus(String employmentStatus);
+
+    // 🌟 Boolean existence checks for registration validation
+    boolean existsByUsername(String username);
+
+    boolean existsByEmail(String email);
+
+    boolean existsByLicenseNumber(String licenseNumber);
+
+    boolean existsByAadharNumber(String aadharNumber);
 }

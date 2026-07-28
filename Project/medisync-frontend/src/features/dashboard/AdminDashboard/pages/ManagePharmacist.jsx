@@ -1,11 +1,15 @@
-import { useState, Fragment } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { UserPlus, Settings } from 'lucide-react'
+import axios from 'axios'
 import SectionCard from '../Widgets/SectionCard'
-import { pharmacists } from '../data/dummyData'
+
+const API_BASE_URL = 'http://localhost:8080/api/pharmacists'
 
 const initialFormState = {
   fullName: '',
+  username: '',
   email: '',
+  licenseNumber: '',
   password: '',
   confirmPassword: '',
   contact: '',
@@ -20,9 +24,80 @@ const initialFormState = {
 export default function ManagePharmacist() {
   const [showAddForm, setShowAddForm] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
-  const [pharmacistsList, setPharmacistsList] = useState(pharmacists)
+  const [pharmacistsList, setPharmacistsList] = useState([])
   const [selectedPharmacist, setSelectedPharmacist] = useState(null)
   const [formData, setFormData] = useState(initialFormState)
+  const [loading, setLoading] = useState(true)
+
+  // 🌟 Option 1: Load data cleanly inside useEffect without synchronous setState triggers
+  useEffect(() => {
+    let isMounted = true
+
+    const loadData = async () => {
+      try {
+        const response = await axios.get(API_BASE_URL)
+        
+        if (isMounted) {
+          // Map backend entity fields to frontend display structure
+          const mappedData = response.data.map((p) => ({
+            id: p.id,
+            // 🌟 Combine firstName & lastName from backend JSON
+            name: `${p.firstName || ''} ${p.lastName || ''}`.trim() || 'Pharmacist',
+            username: p.username,
+            email: p.email,
+            degree: 'B.Pharm',
+            licenseNumber: p.licenseNumber,
+            shift: p.workingShift || 'N/A',
+            contact: p.phoneNumber || p.contactNumber || 'N/A',
+            avatar: `https://i.pravatar.cc/150?u=${p.id || p.username}`,
+            dob: p.dateOfBirth || 'N/A',
+            aadhar: p.aadharNumber || 'N/A',
+            joined: p.dateOfJoining || 'N/A',
+            address: p.address || 'N/A',
+          }))
+          
+          setPharmacistsList(mappedData)
+        }
+      } catch (error) {
+        console.error('Error fetching pharmacists:', error)
+      } finally {
+        if (isMounted) {
+          setLoading(false)
+        }
+      }
+    }
+
+    loadData()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  // Helper function to re-fetch table data after adding a new user
+  const reloadPharmacists = async () => {
+    try {
+      const response = await axios.get(API_BASE_URL)
+      const mappedData = response.data.map((p) => ({
+        id: p.id,
+        name: p.fullName || p.name || 'Pharmacist',
+        username: p.username,
+        email: p.email,
+        degree: 'B.Pharm',
+        licenseNumber: p.licenseNumber,
+        shift: p.workingShift || 'N/A',
+        contact: p.phoneNumber || p.contactNumber || 'N/A',
+        avatar: `https://i.pravatar.cc/150?u=${p.id || p.username}`,
+        dob: p.dateOfBirth || 'N/A',
+        aadhar: p.aadharNumber || p.aadhar || 'N/A',
+        joined: p.dateOfJoining || 'N/A',
+        address: p.address || 'N/A',
+      }))
+      setPharmacistsList(mappedData)
+    } catch (error) {
+      console.error('Error reloading pharmacists:', error)
+    }
+  }
 
   const handleFormChange = (event) => {
     const { name, value, type, checked } = event.target
@@ -32,24 +107,28 @@ export default function ManagePharmacist() {
     }))
   }
 
-  const handleAddUserSubmit = (event) => {
+  // 🌟 Submit new Pharmacist to Spring Boot backend
+  const handleAddUserSubmit = async (event) => {
     event.preventDefault()
-    const newUser = {
-      id: Date.now(),
-      name: formData.fullName || 'New Pharmacist',
-      degree: 'B.Pharm',
-      shift: formData.shift || '09.00 AM - 05.00 PM',
-      contact: formData.contact,
-      avatar: 'https://i.pravatar.cc/150?img=55',
-      dob: formData.dob || '',
-      aadhar: formData.adhar,
-      joined: formData.joined || new Date().toISOString().slice(0, 10),
-      address: formData.address,
-      email: formData.email,
+
+    if (formData.password !== formData.confirmPassword) {
+      alert('Passwords do not match!')
+      return
     }
-    setPharmacistsList((current) => [newUser, ...current])
-    setFormData(initialFormState)
-    setShowAddForm(false)
+
+    try {
+      const response = await axios.post(`${API_BASE_URL}/register`, formData)
+      alert(response.data.message || 'Pharmacist registered successfully!')
+      
+      // Reset form, hide drawer, and reload fresh decrypted data from backend
+      setFormData(initialFormState)
+      setShowAddForm(false)
+      reloadPharmacists()
+    } catch (error) {
+      console.error('Registration Error:', error)
+      const errorMsg = error.response?.data?.error || error.response?.data || 'Failed to register pharmacist.'
+      alert(errorMsg)
+    }
   }
 
   const handleAddUserToggle = () => {
@@ -80,7 +159,7 @@ export default function ManagePharmacist() {
                 <button
                   type="button"
                   onClick={handleAddUserToggle}
-                  className="cursor-pointer flex items-center gap-2 rounded-lg border border-medisync-border bg-white px-4 py-2 text-sm font-medium text-medisync-text transition hover:border-medisync-teal hover:text-medisync-teal"
+                  className="flex cursor-pointer items-center gap-2 rounded-lg border border-medisync-border bg-white px-4 py-2 text-sm font-medium text-medisync-text transition hover:border-medisync-teal hover:text-medisync-teal"
                 >
                   <UserPlus size={16} />
                   {showAddForm ? 'Close Form' : 'Add User'}
@@ -138,36 +217,76 @@ export default function ManagePharmacist() {
                 Create your account to get started
               </p>
               <form onSubmit={handleAddUserSubmit} className="space-y-5">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-500" htmlFor="fullName">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    name="fullName"
-                    id="fullName"
-                    value={formData.fullName}
-                    onChange={handleFormChange}
-                    placeholder="Enter your Full Name"
-                    required
-                    className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none ring-1 ring-transparent transition focus:bg-white focus:ring-[#5ab8b2]"
-                  />
+                
+                {/* Full Name & Username */}
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-500" htmlFor="fullName">
+                      Full Name
+                    </label>
+                    <input
+                      type="text"
+                      name="fullName"
+                      id="fullName"
+                      value={formData.fullName}
+                      onChange={handleFormChange}
+                      placeholder="Enter your Full Name"
+                      required
+                      className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 outline-none ring-1 ring-transparent transition placeholder:text-slate-400 focus:bg-white focus:ring-[#5ab8b2]"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-500" htmlFor="username">
+                      Username
+                    </label>
+                    <input
+                      type="text"
+                      name="username"
+                      id="username"
+                      value={formData.username}
+                      onChange={handleFormChange}
+                      placeholder="Enter Username"
+                      required
+                      className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 outline-none ring-1 ring-transparent transition placeholder:text-slate-400 focus:bg-white focus:ring-[#5ab8b2]"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-500" htmlFor="email">
-                    Email
-                  </label>
-                  <input
-                    type="email"
-                    name="email"
-                    id="email"
-                    value={formData.email}
-                    onChange={handleFormChange}
-                    placeholder="Enter your Email"
-                    required
-                    className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none ring-1 ring-transparent transition focus:bg-white focus:ring-[#5ab8b2]"
-                  />
+
+                {/* Email & License Number */}
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-500" htmlFor="email">
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      name="email"
+                      id="email"
+                      value={formData.email}
+                      onChange={handleFormChange}
+                      placeholder="Enter your Email"
+                      required
+                      className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 outline-none ring-1 ring-transparent transition placeholder:text-slate-400 focus:bg-white focus:ring-[#5ab8b2]"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-500" htmlFor="licenseNumber">
+                      Pharmacy License No.
+                    </label>
+                    <input
+                      type="text"
+                      name="licenseNumber"
+                      id="licenseNumber"
+                      value={formData.licenseNumber}
+                      onChange={handleFormChange}
+                      placeholder="Enter License Number"
+                      required
+                      className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 outline-none ring-1 ring-transparent transition placeholder:text-slate-400 focus:bg-white focus:ring-[#5ab8b2]"
+                    />
+                  </div>
                 </div>
+
+                {/* Passwords */}
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-500" htmlFor="password">
@@ -181,7 +300,7 @@ export default function ManagePharmacist() {
                       onChange={handleFormChange}
                       placeholder="Enter your Password"
                       required
-                      className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none ring-1 ring-transparent transition focus:bg-white focus:ring-[#5ab8b2]"
+                      className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 outline-none ring-1 ring-transparent transition placeholder:text-slate-400 focus:bg-white focus:ring-[#5ab8b2]"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -196,25 +315,46 @@ export default function ManagePharmacist() {
                       onChange={handleFormChange}
                       placeholder="Confirm Your Password"
                       required
-                      className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none ring-1 ring-transparent transition focus:bg-white focus:ring-[#5ab8b2]"
+                      className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 outline-none ring-1 ring-transparent transition placeholder:text-slate-400 focus:bg-white focus:ring-[#5ab8b2]"
                     />
                   </div>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-500" htmlFor="contact">
-                    Contact Number
-                  </label>
-                  <input
-                    type="text"
-                    name="contact"
-                    id="contact"
-                    value={formData.contact}
-                    onChange={handleFormChange}
-                    placeholder="Enter your contact number"
-                    required
-                    className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none ring-1 ring-transparent transition focus:bg-white focus:ring-[#5ab8b2]"
-                  />
+
+                {/* Contact Number & Aadhar ID */}
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-500" htmlFor="contact">
+                      Contact Number
+                    </label>
+                    <input
+                      type="tel"
+                      name="contact"
+                      id="contact"
+                      value={formData.contact}
+                      onChange={handleFormChange}
+                      placeholder="Enter your contact number"
+                      required
+                      className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 outline-none ring-1 ring-transparent transition placeholder:text-slate-400 focus:bg-white focus:ring-[#5ab8b2]"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-slate-500" htmlFor="adhar">
+                      Adhar ID
+                    </label>
+                    <input
+                      type="text"
+                      name="adhar"
+                      id="adhar"
+                      value={formData.adhar}
+                      onChange={handleFormChange}
+                      placeholder="Enter your Adhar ID"
+                      required
+                      className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 outline-none ring-1 ring-transparent transition placeholder:text-slate-400 focus:bg-white focus:ring-[#5ab8b2]"
+                    />
+                  </div>
                 </div>
+
+                {/* Dates */}
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <label className="text-xs font-semibold text-slate-500" htmlFor="dob">
@@ -226,6 +366,7 @@ export default function ManagePharmacist() {
                       id="dob"
                       value={formData.dob}
                       onChange={handleFormChange}
+                      required
                       className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:bg-white focus:ring-[#5ab8b2]"
                     />
                   </div>
@@ -239,10 +380,13 @@ export default function ManagePharmacist() {
                       id="joined"
                       value={formData.joined}
                       onChange={handleFormChange}
+                      required
                       className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:bg-white focus:ring-[#5ab8b2]"
                     />
                   </div>
                 </div>
+
+                {/* Working Shift */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-500" htmlFor="shift">
                     Working Shift
@@ -252,6 +396,7 @@ export default function ManagePharmacist() {
                     id="shift"
                     value={formData.shift}
                     onChange={handleFormChange}
+                    required
                     className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 outline-none ring-1 ring-transparent transition focus:bg-white focus:ring-[#5ab8b2]"
                   >
                     <option value="">Select shift</option>
@@ -261,21 +406,8 @@ export default function ManagePharmacist() {
                     <option value="09.00 AM - 05.00 PM">09.00 AM - 05.00 PM</option>
                   </select>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-slate-500" htmlFor="adhar">
-                    Adhar ID
-                  </label>
-                  <input
-                    type="text"
-                    name="adhar"
-                    id="adhar"
-                    value={formData.adhar}
-                    onChange={handleFormChange}
-                    placeholder="Enter your Adhar ID"
-                    required
-                    className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none ring-1 ring-transparent transition focus:bg-white focus:ring-[#5ab8b2]"
-                  />
-                </div>
+
+                {/* Address */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-slate-500" htmlFor="address">
                     Address
@@ -288,9 +420,11 @@ export default function ManagePharmacist() {
                     onChange={handleFormChange}
                     placeholder="Enter your Address"
                     required
-                    className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none ring-1 ring-transparent transition focus:bg-white focus:ring-[#5ab8b2]"
+                    className="w-full rounded-xl border-0 bg-slate-100 px-4 py-3.5 text-sm text-slate-900 outline-none ring-1 ring-transparent transition placeholder:text-slate-400 focus:bg-white focus:ring-[#5ab8b2]"
                   />
                 </div>
+
+                {/* Remember Me */}
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
@@ -304,6 +438,8 @@ export default function ManagePharmacist() {
                     Remember me
                   </label>
                 </div>
+
+                {/* Action Buttons */}
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
@@ -342,58 +478,90 @@ export default function ManagePharmacist() {
               </tr>
             </thead>
             <tbody>
-              {pharmacistsList.map((p) => (
-                <Fragment key={p.id}>
-                  <tr
-                    onClick={() => handleRowToggle(p)}
-                    className="cursor-pointer border-b border-medisync-border transition hover:bg-gray-50"
-                  >
-                    <td className="px-4 py-4">
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={p.avatar}
-                          alt={p.name}
-                          className="h-10 w-10 rounded-full object-cover"
-                        />
-                        <div>
-                          <p className="font-semibold text-medisync-text">{p.name}</p>
-                          <p className="text-xs text-medisync-muted">{p.degree}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-4 text-medisync-text">{p.shift}</td>
-                    <td className="px-4 py-4 text-medisync-text">{p.contact}</td>
-                  </tr>
-                  {selectedPharmacist?.id === p.id && (
-                    <tr className="bg-slate-50">
-                      <td colSpan={3} className="px-4 py-4">
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {loading ? (
+                <tr>
+                  <td colSpan={3} className="px-4 py-8 text-center text-slate-500">
+                    Loading pharmacists...
+                  </td>
+                </tr>
+              ) : pharmacistsList.length === 0 ? (
+                <tr>
+                  <td colSpan={3} className="px-4 py-8 text-center text-slate-500">
+                    No pharmacists found. Add a user above!
+                  </td>
+                </tr>
+              ) : (
+                pharmacistsList.map((p) => (
+                  <Fragment key={p.id}>
+                    <tr
+                      onClick={() => handleRowToggle(p)}
+                      className="cursor-pointer border-b border-medisync-border transition hover:bg-gray-50"
+                    >
+                      <td className="px-4 py-4">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={p.avatar}
+                            alt={p.name}
+                            className="h-10 w-10 rounded-full object-cover"
+                          />
                           <div>
-                            <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">Date of Birth</p>
-                            <p className="mt-2 text-sm font-semibold text-medisync-text">{p.dob}</p>
-                          </div>
-                          <div>
-                            <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">Aadhar no</p>
-                            <p className="mt-2 text-sm font-semibold text-medisync-text">{p.aadhar}</p>
-                          </div>
-                          <div>
-                            <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">Joined</p>
-                            <p className="mt-2 text-sm font-semibold text-medisync-text">{p.joined}</p>
-                          </div>
-                          <div>
-                            <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">Working shift</p>
-                            <p className="mt-2 text-sm font-semibold text-medisync-text">{p.shift}</p>
-                          </div>
-                          <div>
-                            <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">Contact</p>
-                            <p className="mt-2 text-sm font-semibold text-medisync-text">{p.contact}</p>
+                            <p className="font-semibold text-medisync-text">{p.name}</p>
+                            <p className="text-xs text-medisync-muted">@{p.username}</p>
                           </div>
                         </div>
                       </td>
+                      <td className="px-4 py-4 text-medisync-text">{p.shift}</td>
+                      <td className="px-4 py-4 text-medisync-text">{p.contact}</td>
                     </tr>
-                  )}
-                </Fragment>
-              ))}
+                    {selectedPharmacist?.id === p.id && (
+                      <tr className="bg-slate-50">
+                        <td colSpan={3} className="px-4 py-4">
+                          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                            <div>
+                              <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">
+                                License No.
+                              </p>
+                              <p className="mt-2 text-sm font-semibold text-medisync-text">
+                                {p.licenseNumber}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">
+                                Date of Birth
+                              </p>
+                              <p className="mt-2 text-sm font-semibold text-medisync-text">{p.dob}</p>
+                            </div>
+                            <div>
+                              <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">
+                                Adhar no
+                              </p>
+                              <p className="mt-2 text-sm font-semibold text-medisync-text">{p.aadhar}</p>
+                            </div>
+                            <div>
+                              <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">
+                                Joined
+                              </p>
+                              <p className="mt-2 text-sm font-semibold text-medisync-text">{p.joined}</p>
+                            </div>
+                            <div>
+                              <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">
+                                Email
+                              </p>
+                              <p className="mt-2 text-sm font-semibold text-medisync-text">{p.email}</p>
+                            </div>
+                            <div>
+                              <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">
+                                Address
+                              </p>
+                              <p className="mt-2 text-sm font-semibold text-medisync-text">{p.address}</p>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
+                ))
+              )}
             </tbody>
           </table>
         </div>

@@ -47,6 +47,7 @@ public class SecurityConfig {
         return authProvider;
     }
 
+    // 🌟 THIS BEAN EXPLICITLY PROVIDES AuthenticationManager TO AuthController
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
         return config.getAuthenticationManager();
@@ -55,24 +56,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-            // 1. Fully disable CSRF for REST APIs
             .csrf(AbstractHttpConfigurer::disable)
-            // 2. Enable CORS with custom configuration source
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            // 3. Make session management stateless
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            // 4. Configure authentication provider
             .authenticationProvider(authenticationProvider())
-            // 5. URL authorization rules
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers("/api/alerts/**").permitAll() 
+                .requestMatchers("/api/pharmacists/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/pharmacist/**").hasRole("PHARMACIST")
                 .anyRequest().authenticated()
             )
-            // 6. Execute JWT filter before UsernamePasswordAuthenticationFilter
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -81,9 +76,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        
         configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:5173"));
-        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setExposedHeaders(List.of("Authorization"));
         configuration.setAllowCredentials(true);

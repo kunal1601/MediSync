@@ -36,10 +36,12 @@ public class Pharmacist {
     @Column(name = "date_of_birth", nullable = false)
     private LocalDate dateOfBirth;
 
-    @Column(name = "license_number", nullable = false, unique = true, length = 50)
+    // 🌟 Increased length to 255 to support AES-256 encrypted string storage
+    @Column(name = "license_number", nullable = false, unique = true, length = 255)
     private String licenseNumber;
 
-    @Column(name = "aadhar_number", nullable = false, unique = true, length = 12)
+    // 🌟 Increased length to 255 to support AES-256 encrypted string storage
+    @Column(name = "aadhar_number", nullable = false, unique = true, length = 255)
     private String aadharNumber;
 
     @Column(name = "phone_number", nullable = false, length = 15)
@@ -49,7 +51,11 @@ public class Pharmacist {
     private LocalDate dateOfJoining;
 
     @Column(name = "working_shift", nullable = false, length = 20)
-    private String workingShift = "DAY";
+    private String workingShift = "MORNING";
+
+    // 🌟 Added missing address field
+    @Column(name = "address", length = 255)
+    private String address;
 
     @Column(name = "employment_status", nullable = false, length = 20)
     private String employmentStatus = "ACTIVE";
