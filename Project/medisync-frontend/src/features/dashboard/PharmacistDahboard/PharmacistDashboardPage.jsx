@@ -18,6 +18,26 @@ const PharmacistDashboardPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [topSellingMedicine,setTopSellingMedicine]=useState([]);
   const [todaysAlerts, setTodaysAlerts] = useState([]);
+  const formatLabel = (value) =>
+    (value || "")
+        .replace(/_/g, " ")
+        .toLowerCase()
+        .replace(/\b\w/g, c => c.toUpperCase());
+
+const getPriority = (type) => {
+    switch (type) {
+        case "OUT_OF_STOCK":
+        case "EXPIRED":
+            return "High";
+
+        case "LOW_STOCK":
+        case "NEAR_EXPIRY":
+            return "Medium";
+
+        default:
+            return "Low";
+    }
+};
   const [statistics,setStatistics]=useState( {totalSales: 0,
     billsToday: 0,
     lowStockItems: 0,
@@ -236,18 +256,18 @@ const PharmacistDashboardPage = () => {
                             </p>
 
                             <p className="text-sm text-slate-500">
-                                {alert.alertType}
+                                 {formatLabel(alert.alertType)}
                             </p>
                         </div>
 
                         <span
                             className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                alert.priority === "High"
+                                getPriority(alert.alertType) === "High"
                                     ? "bg-red-100 text-red-600"
                                     : "bg-orange-100 text-orange-600"
                             }`}
                         >
-                            {alert.priority}
+                            {formatLabel(alert.alertType)}
                         </span>
 
                     </div>
