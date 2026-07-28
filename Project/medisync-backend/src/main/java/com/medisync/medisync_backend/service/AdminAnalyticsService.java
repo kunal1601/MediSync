@@ -21,6 +21,7 @@ public class AdminAnalyticsService {
 		this.incomeGrowthRepo=incomeGrowthRepo;
 		this.profitLossRepo=profitLossRepo;
 	}
+	
 	// Repository dependency for fetching income growth data
 	public List<IncomeGrowthResponse> getIncomeGrowth(String period){
 		

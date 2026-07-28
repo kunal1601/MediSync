@@ -2,6 +2,7 @@ package com.medisync.medisync_backend.repository;
 
 import com.medisync.medisync_backend.entity.Pharmacist;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,6 +19,9 @@ public interface PharmacistRepository extends JpaRepository<Pharmacist, Long> {
 
     List<Pharmacist> findByEmploymentStatus(String employmentStatus);
 
+    Optional<Pharmacist> findById(Long id);
+    
+    
     // 🌟 Boolean existence checks for registration validation
     boolean existsByUsername(String username);
 
@@ -26,4 +30,12 @@ public interface PharmacistRepository extends JpaRepository<Pharmacist, Long> {
     boolean existsByLicenseNumber(String licenseNumber);
 
     boolean existsByAadharNumber(String aadharNumber);
+    
+    @Query("""
+    	       SELECT p
+    	       FROM Pharmacist p
+    	       WHERE p.employmentStatus = 'ACTIVE'
+    	       """)
+    List<Pharmacist> getActivePharmacists();
+    
 }
