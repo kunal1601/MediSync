@@ -39,5 +39,17 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 	        AlertType alertType,
 	        AlertStatus status
 	);
+	
+	List<Alert> findByMedicineAndAlertTypeAndStatusIn(
+	        Medicine medicine,
+	        AlertType alertType,
+	        List<AlertStatus> statuses
+	);
+
+	List<Alert> findByMedicineStockAndAlertTypeAndStatusIn(
+	        MedicineStock medicineStock,
+	        AlertType alertType,
+	        List<AlertStatus> statuses
+	);
 
 }

@@ -169,7 +169,7 @@ const PharmacistAlertsPage = () => {
           </h3>
         </div>
 
-        <div className="p-5 space-y-3">
+        <div className="p-5 space-y-3 max-h-[420px] overflow-y-auto">
           {systemAlerts.length === 0 ? (
             <p className="text-sm text-slate-500 py-4 text-center">
               No system alerts right now. New stock or expiry alerts will appear
@@ -222,9 +222,9 @@ const PharmacistAlertsPage = () => {
           </h3>
         </div>
 
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-auto max-h-[320px]">
           <table className="w-full">
-            <thead className="bg-slate-50">
+            <thead className="bg-slate-50 sticky top-0 z-10">
               <tr className="text-left">
                 <th className="px-6 py-4">Medicine</th>
                 <th className="px-6 py-4">Request Type</th>

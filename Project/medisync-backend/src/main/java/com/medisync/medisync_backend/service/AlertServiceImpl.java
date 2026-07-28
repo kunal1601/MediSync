@@ -71,13 +71,16 @@ public class AlertServiceImpl implements AlertService {
             }
 
             // Check if NEW alert already exists
-            boolean alreadyExists = alertRepository
-                    .findByMedicineAndAlertTypeAndStatus(
+            boolean alreadyExists = !alertRepository
+                    .findByMedicineAndAlertTypeAndStatusIn(
                             medicine,
                             alertType,
-                            AlertStatus.NEW
+                            List.of(
+                                    AlertStatus.NEW,
+                                    AlertStatus.PENDING
+                            )
                     )
-                    .isPresent();
+                    .isEmpty();
 
             if (alreadyExists) {
                 continue;
@@ -127,13 +130,16 @@ public class AlertServiceImpl implements AlertService {
             }
 
             // Duplicate check
-            boolean alreadyExists = alertRepository
-                    .findByMedicineStockAndAlertTypeAndStatus(
+            boolean alreadyExists = !alertRepository
+                    .findByMedicineStockAndAlertTypeAndStatusIn(
                             stock,
                             alertType,
-                            AlertStatus.NEW
+                            List.of(
+                                    AlertStatus.NEW,
+                                    AlertStatus.PENDING
+                            )
                     )
-                    .isPresent();
+                    .isEmpty();
 
             if (alreadyExists) {
                 continue;
