@@ -15,6 +15,15 @@ import com.medisync.medisync_backend.entity.MedicineStock;
 
 @Repository
 public interface MedicineStockRepository extends JpaRepository<MedicineStock, Integer> {
+	
+	@Query("""
+		    SELECT ms
+		    FROM MedicineStock ms
+		    WHERE ms.stockQuantity > 0
+		      AND ms.expiryDate >= CURRENT_DATE
+		    ORDER BY ms.medicine.name ASC
+		""")
+		List<MedicineStock> findAvailableStocksForBilling();
 
     Optional<MedicineStock> findByMedicineAndBatchNumber(
             Medicine medicine,
