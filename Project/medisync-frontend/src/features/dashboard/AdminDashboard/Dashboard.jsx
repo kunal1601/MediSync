@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { Users } from 'lucide-react'
+import {  useEffect } from "react";
 import {
   PieChart,
   Pie,
@@ -17,13 +18,14 @@ import {
 } from 'recharts'
 import SectionCard from './Widgets/SectionCard'
 import CalendarWidget from './Widgets/CalendarWidget'
+import {getIncomeGrowth} from './Services/IncomeGrowth'
 import {
   pharmacistOnBoard,
   profitLossData,
   profitMargin,
   stockDataByFilter,
   stockFilters,
-  incomeGrowthByPeriod,
+  
 } from './data/dummyData'
 
 const formatCurrency = (n) =>
@@ -33,21 +35,7 @@ const formatCurrency = (n) =>
     maximumFractionDigits: 0,
   }).format(n)
 
-  const [incomeData, setIncomeData] = useState([]);
-  const [incomePeriod, setIncomePeriod] = useState("Weekly");
-
-  useEffect(() => {
-    fetchIncomeGrowth();
-  }, [incomePeriod]);
-
-  const fetchIncomeGrowth = async () => {
-    try {
-      const data = await getIncomeGrowth(incomePeriod);
-      setIncomeData(data);
-    } catch (error) {
-      console.error("Error fetching income growth:", error);
-    }
-  };
+  
 function PharmacistCard({ item, onView }) {
   return (
     <div className="flex flex-col justify-between rounded-xl border border-medisync-border bg-white p-4 shadow-sm">
@@ -317,11 +305,25 @@ function IncomeAreaChart({ data, period }) {
 
 export default function Dashboard() {
   const [activeStockFilter, setActiveStockFilter] = useState('By Most Sold')
-  const [incomePeriod, setIncomePeriod] = useState('Monthly')
+  const [incomePeriod, setIncomePeriod] = useState('weekly')
   const [selectedPharmacist, setSelectedPharmacist] = useState(null)
+  const [incomeData, setIncomeData] = useState([]);
+  
 
+  useEffect(() => {
+    fetchIncomeGrowth();
+  }, [incomePeriod]);
+
+  const fetchIncomeGrowth = async () => {
+    try {
+      const data = await getIncomeGrowth(incomePeriod);
+      setIncomeData(data);
+    } catch (error) {
+      console.error("Error fetching income growth:", error);
+    }
+  };
   const stockData = stockDataByFilter[activeStockFilter]
-  const incomeData = incomeGrowthByPeriod[incomePeriod]
+  // const incomeData = incomeGrowthByPeriod[incomePeriod]
 
   return (
     <div className="space-y-5">
@@ -405,9 +407,9 @@ export default function Dashboard() {
             onChange={(e) => setIncomePeriod(e.target.value)}
             className="rounded-lg border border-medisync-border bg-white px-3 py-1 text-xs text-medisync-text outline-none focus:border-medisync-teal"
           >
-            <option value="Weekly">Weekly</option>
-            <option value="Monthly">Monthly</option>
-            <option value="Yearly">Yearly</option>
+            <option value="weekly">Weekly</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
           </select>
         }
       >

@@ -34,13 +34,13 @@ public interface IncomeGrowthRepository  extends JpaRepository<SalesInvoice,Inte
 	  
 	  //By Yearly
 	  @Query(value="""
-	  		SELECT 
-	  			DATE(created_at) AS label,
-	  			SUM(net_payable) AS income
-	  		FROM sales_invoices
-	  		WHERE YEAR(created_at)=YEAR(CURDATE())
-	  		GROUP BY DATE(created_at)
-	  		ORDER BY DATE(created_at)
+	  		SELECT
+			    YEAR(created_at) AS label,
+			    SUM(net_payable) AS income
+			FROM sales_invoices
+			WHERE YEAR(created_at) >= YEAR(CURDATE()) - 4
+			GROUP BY YEAR(created_at)
+			ORDER BY YEAR(created_at);
 	  		""",nativeQuery=true)
 	  List<Object[]> getYearlyIncome();
 }
