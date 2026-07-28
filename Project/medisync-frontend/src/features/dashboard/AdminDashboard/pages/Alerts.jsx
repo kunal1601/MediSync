@@ -1,35 +1,27 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   Bell,
   AlertTriangle,
-  Info,
-  CheckCircle,
+  ChevronDown,
+  ChevronRight,
   XCircle,
 } from 'lucide-react'
 import SectionCard from '../Widgets/SectionCard'
-import { alerts, extraMedicineOrders } from '../data/dummyData'
+import { extraMedicineOrders } from '../data/dummyData'
+import API from "../../../../api/axios";
 
-const iconMap = {
-  warning: AlertTriangle,
-  danger: Bell,
-  info: Info,
-}
-
-const colorMap = {
-  warning: 'text-amber-500 bg-amber-50',
-  danger: 'text-red-500 bg-red-50',
-  info: 'text-medisync-teal bg-medisync-teal/10',
-}
 
 const tabs = ['Medicine Stock Alerts', 'Pending Orders', 'Extra Medicines']
 
 export default function Alerts() {
-  const [activeTab, setActiveTab] = useState('Extra Medicines')
+  const [activeTab, setActiveTab] = useState('Medicine Stock Alerts')
   const [orders, setOrders] = useState(extraMedicineOrders)
   const [draftStatuses, setDraftStatuses] = useState(
     Object.fromEntries(extraMedicineOrders.map((order) => [order.id, order.status]))
   )
   const [hiddenOrders, setHiddenOrders] = useState([])
+  const [systemAlerts, setSystemAlerts] = useState([])
+  const [openSection, setOpenSection] = useState(null)
 
   const handleDraftStatus = (orderId, status) => {
     setDraftStatuses((current) => ({ ...current, [orderId]: status }))
@@ -49,6 +41,36 @@ export default function Alerts() {
 
   const pendingOrders = orders.filter((order) => order.status === 'Yet to place Order')
   const visibleExtraOrders = orders.filter((order) => !hiddenOrders.includes(order.id))
+  useEffect(() => {
+  fetchAlerts()
+}, [])
+
+const fetchAlerts = async () => {
+  try {
+    const response = await API.get('/alerts/system')
+    setSystemAlerts(response.data)
+  } catch (err) {
+    console.error(err)
+  }
+}
+
+const lowStockAlerts = systemAlerts.filter(
+  (a) =>
+    a.alertType === 'LOW_STOCK' ||
+    a.alertType === 'OUT_OF_STOCK'
+)
+
+const nearExpiryAlerts = systemAlerts.filter(
+  (a) => a.alertType === 'NEAR_EXPIRY'
+)
+
+const expiredAlerts = systemAlerts.filter(
+  (a) => a.alertType === 'EXPIRED'
+)
+
+const toggleSection = (section) => {
+  setOpenSection(openSection === section ? null : section)
+}
 
   return (
     <div className="space-y-5">
@@ -71,32 +93,203 @@ export default function Alerts() {
         </div>
 
         <div className="mt-6 space-y-4">
-          {activeTab === 'Medicine Stock Alerts' && (
-            <div className="space-y-3">
-              {alerts.map((alert) => {
-                const Icon = iconMap[alert.type]
-                return (
-                  <div
-                    key={alert.id}
-                    className="flex gap-4 rounded-xl border border-medisync-border p-4 shadow-sm"
-                  >
-                    <div
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${colorMap[alert.type]}`}
-                    >
-                      <Icon size={18} />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-start justify-between gap-2">
-                        <h3 className="font-semibold text-medisync-text">{alert.title}</h3>
-                        <span className="shrink-0 text-xs text-medisync-muted">{alert.time}</span>
-                      </div>
-                      <p className="mt-1 text-sm text-medisync-muted">{alert.message}</p>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
+        {activeTab === 'Medicine Stock Alerts' && (
+  <div className="space-y-4">
+
+    {/* LOW STOCK */}
+    <div className="rounded-xl border border-medisync-border overflow-hidden">
+
+      <button
+        onClick={() => toggleSection("low")}
+        className="w-full flex items-center justify-between px-5 py-4 bg-amber-50 hover:bg-amber-100 transition"
+      >
+        <div className="flex items-center gap-3">
+          <AlertTriangle className="text-amber-500" size={20} />
+          <span className="font-semibold">
+            Low Stock Alerts ({lowStockAlerts.length})
+          </span>
+        </div>
+
+        {openSection === "low"
+          ? <ChevronDown size={18}/>
+          : <ChevronRight size={18}/>
+        }
+
+      </button>
+
+      {openSection === "low" && (
+
+        <div className="max-h-64 overflow-y-auto divide-y">
+
+          {lowStockAlerts.length===0 ? (
+
+            <p className="p-4 text-sm text-slate-500">
+              No low stock medicines.
+            </p>
+
+          ) : (
+
+            lowStockAlerts.map(alert=>(
+              <div
+                key={alert.alertId}
+                className="p-4 hover:bg-slate-50"
+              >
+
+                <p className="font-semibold">
+                  {alert.medicineName}
+                </p>
+
+                <p className="text-sm text-slate-500">
+                  {alert.description}
+                </p>
+
+              </div>
+            ))
+
           )}
+
+        </div>
+
+      )}
+
+    </div>
+
+    {/* NEAR EXPIRY */}
+
+    <div className="rounded-xl border border-medisync-border overflow-hidden">
+
+      <button
+        onClick={() => toggleSection("expiry")}
+        className="w-full flex items-center justify-between px-5 py-4 bg-orange-50 hover:bg-orange-100 transition"
+      >
+
+        <div className="flex items-center gap-3">
+
+          <Bell className="text-orange-500" size={20}/>
+
+          <span className="font-semibold">
+            Near Expiry ({nearExpiryAlerts.length})
+          </span>
+
+        </div>
+
+        {openSection==="expiry"
+          ? <ChevronDown size={18}/>
+          : <ChevronRight size={18}/>
+        }
+
+      </button>
+
+      {openSection==="expiry" && (
+
+        <div className="max-h-64 overflow-y-auto divide-y">
+
+          {nearExpiryAlerts.length===0 ? (
+
+            <p className="p-4 text-sm text-slate-500">
+              No medicines near expiry.
+            </p>
+
+          ) : (
+
+            nearExpiryAlerts.map(alert=>(
+              <div
+                key={alert.alertId}
+                className="p-4 hover:bg-slate-50"
+              >
+
+                <p className="font-semibold">
+                  {alert.medicineName}
+                </p>
+
+                <p className="text-sm text-slate-500">
+                  Batch : {alert.batchNumber}
+                </p>
+
+                <p className="text-sm text-slate-500">
+                  Expiry : {alert.expiryDate}
+                </p>
+
+              </div>
+            ))
+
+          )}
+
+        </div>
+
+      )}
+
+    </div>
+
+    {/* EXPIRED */}
+
+    <div className="rounded-xl border border-medisync-border overflow-hidden">
+
+      <button
+        onClick={() => toggleSection("expired")}
+        className="w-full flex items-center justify-between px-5 py-4 bg-red-50 hover:bg-red-100 transition"
+      >
+
+        <div className="flex items-center gap-3">
+
+          <XCircle className="text-red-500" size={20}/>
+
+          <span className="font-semibold">
+            Expired Medicines ({expiredAlerts.length})
+          </span>
+
+        </div>
+
+        {openSection==="expired"
+          ? <ChevronDown size={18}/>
+          : <ChevronRight size={18}/>
+        }
+
+      </button>
+
+      {openSection==="expired" && (
+
+        <div className="max-h-64 overflow-y-auto divide-y">
+
+          {expiredAlerts.length===0 ? (
+
+            <p className="p-4 text-sm text-slate-500">
+              No expired medicines.
+            </p>
+
+          ) : (
+
+            expiredAlerts.map(alert=>(
+              <div
+                key={alert.alertId}
+                className="p-4 hover:bg-slate-50"
+              >
+
+                <p className="font-semibold">
+                  {alert.medicineName}
+                </p>
+
+                <p className="text-sm text-slate-500">
+                  Batch : {alert.batchNumber}
+                </p>
+
+                <p className="text-sm text-red-500">
+                  Expired : {alert.expiryDate}
+                </p>
+
+              </div>
+            ))
+
+          )}
+
+        </div>
+
+      )}
+
+    </div>
+
+  </div>
+)}
 
           {activeTab === 'Pending Orders' && (
             <div className="space-y-4">
