@@ -75,6 +75,7 @@ public class BillingService {
 		SalesInvoice invoice = SalesInvoice.builder()
 		        .invoiceNumber(generateInvoiceNumber())
 		        .customer(customer)
+		        .paymentMode(request.getPaymentMode())
 		        .discountPercentage(discountPercentage)
 		        .grossTotal(BigDecimal.ZERO)
 		        .taxAmount(BigDecimal.ZERO)
@@ -92,7 +93,8 @@ public class BillingService {
 			
 		    MedicineStock stock = medicineStockRepository.findById(itemRequest.getStockId())
 		            .orElseThrow(() ->
-		                    new RuntimeException("Medicine stock not found"));
+		                    new RuntimeException("Medicine stock not found with id: "
+		                            + itemRequest.getStockId()));
 
 		    if (stock.getStockQuantity() < itemRequest.getQuantity()) {
 		        throw new RuntimeException(

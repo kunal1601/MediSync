@@ -4,10 +4,14 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.medisync.medisync_backend.dto.billing.BillingMedicineResponse;
+import com.medisync.medisync_backend.dto.billing.CreateInvoiceRequest;
+import com.medisync.medisync_backend.dto.billing.CreateInvoiceResponse;
 import com.medisync.medisync_backend.service.BillingService;
 
 import lombok.RequiredArgsConstructor;
@@ -21,9 +25,15 @@ public class BillingController {
 
     @GetMapping("/medicines")
     public ResponseEntity<List<BillingMedicineResponse>> getMedicines() {
+        return ResponseEntity.ok(billingService.getMedicinesForBilling());
+    }
+
+    @PostMapping("/invoice")
+    public ResponseEntity<CreateInvoiceResponse> createInvoice(
+            @RequestBody CreateInvoiceRequest request) {
 
         return ResponseEntity.ok(
-                billingService.getMedicinesForBilling()
+                billingService.createInvoice(request)
         );
     }
 }
