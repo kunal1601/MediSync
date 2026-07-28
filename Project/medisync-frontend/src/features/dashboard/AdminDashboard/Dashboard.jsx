@@ -27,6 +27,7 @@ import {
   stockFilters,
   
 } from './data/dummyData'
+import { getProfitLoss } from './Services/ProfitLoss';
 
 const formatCurrency = (n) =>
   new Intl.NumberFormat('en-IN', {
@@ -75,16 +76,78 @@ function ProfitLossTooltip({ active, payload }) {
 }
 
 function ProfitLossChart() {
-  const total = useMemo(
-    () => profitLossData.reduce((s, d) => s + d.amount, 0),
-    []
-  )
 
-  return (
-    <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-center">
-      <div className="relative h-52 w-52">
-        <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-          <PieChart>
+  const [profitLossData, setProfitLossData] = useState([]);
+
+  const [profitMargin, setProfitMargin] = useState(0);
+
+
+  useEffect(() => {
+
+    fetchProfitLoss();
+
+  }, []);
+
+
+
+  const fetchProfitLoss = async () => {
+        try {
+          const data = await getProfitLoss();
+          const chartData = [
+
+            {
+              name:"Cost",
+              amount:data.cost,
+              value:
+              Number(((data.cost / data.revenue) * 100))
+              .toFixed(2),
+              color:"#94a3b8"
+            },
+            {
+              name:"Profit",
+              amount:data.profit,
+              value:
+              Number(((data.profit / data.revenue) * 100))
+              .toFixed(2),
+              color:"#14b8a6"
+            },
+            {
+              name:"Loss",
+              amount:data.loss,
+              value:
+              Number(((data.loss / data.revenue) * 100))
+              .toFixed(2),
+              color:"#ef4444"
+            }
+          ];
+          setProfitLossData(chartData);
+
+          setProfitMargin(
+            ((data.profit/data.revenue)*100)
+            .toFixed(1)
+          );
+        }
+        catch(error){
+
+          console.log(error);
+        }
+      };
+
+      const total = profitLossData.reduce(
+        (sum,item)=>sum+item.amount,
+        0
+      );
+      console.log(profitLossData);
+    return (
+
+        <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-center">
+
+          <div className="relative h-52 w-52">
+
+            <ResponsiveContainer width="100%" height="100%">
+
+            <PieChart>
+
             <Pie
               data={profitLossData}
               cx="50%"
@@ -92,48 +155,89 @@ function ProfitLossChart() {
               innerRadius={58}
               outerRadius={85}
               paddingAngle={3}
-              dataKey="value"
+              dataKey="amount"
+              nameKey="name"
               stroke="none"
+              
             >
-              {profitLossData.map((entry) => (
-                <Cell key={entry.name} fill={entry.color} />
-              ))}
-            </Pie>
-            <Tooltip content={<ProfitLossTooltip />} />
-          </PieChart>
+
+            {
+            profitLossData.map((entry)=>(
+            <Cell
+            key={entry.name}
+            fill={entry.color}
+            />
+            ))
+            }
+
+          </Pie>
+
+
+        <Tooltip
+        content={<ProfitLossTooltip />}
+        />
+        </PieChart>
         </ResponsiveContainer>
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <span className="text-center text-sm font-bold text-medisync-teal">
-            +{profitMargin}%
-            <br />
-            <span className="text-xs font-semibold">Profit</span>
+
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+
+            <span className="text-center text-sm font-bold text-medisync-teal">
+
+              +{profitMargin}%
+                <br/>
+
+            <span className="text-xs font-semibold">
+            Profit
+            </span>
           </span>
         </div>
       </div>
-      <div className="space-y-3">
-        <p className="text-xs text-medisync-muted">
-          Total revenue tracked:{' '}
-          <span className="font-semibold text-medisync-text">{formatCurrency(total)}</span>
+
+
+
+        <div className="space-y-3">
+          <p className="text-xs text-medisync-muted">
+            Total revenue tracked:
+            <span className="font-semibold text-medisync-text">
+              {" "}
+              {formatCurrency(total)}
+
+            </span>
         </p>
         <ul className="space-y-2 text-xs">
-          {profitLossData.map((item) => (
-            <li key={item.name} className="flex items-center gap-2">
-              <span
-                className="h-2.5 w-2.5 rounded-full"
-                style={{ backgroundColor: item.color }}
-              />
-              <span className="min-w-[80px] text-medisync-text">{item.name}</span>
-              <span className="text-medisync-muted">{item.value}%</span>
-              <span className="font-medium text-medisync-teal">
-                {formatCurrency(item.amount)}
-              </span>
-            </li>
-          ))}
+            {
+            profitLossData.map((item)=>(
+
+            <li
+            key={item.name}
+            className="flex items-center gap-2"
+            >
+            <span
+            className="h-2.5 w-2.5 rounded-full"
+            style={{
+            backgroundColor:item.color
+            }}
+            />
+            <span className="min-w-[80px] text-medisync-text">
+              {item.name}
+            </span>
+            <span className="text-medisync-muted">
+              {item.value}%
+            </span>
+            <span className="font-medium text-medisync-teal">
+              {formatCurrency(item.amount)}
+
+            </span>
+          </li>
+          ))
+          }
         </ul>
       </div>
+
     </div>
-  )
-}
+
+    )
+  }
 
 function StockTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null

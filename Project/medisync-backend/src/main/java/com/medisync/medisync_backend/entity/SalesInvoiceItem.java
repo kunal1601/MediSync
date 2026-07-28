@@ -32,7 +32,12 @@ public class SalesInvoiceItem {
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="medicine_id" , nullable=false)
 	private Medicine medicine;
-	
+	 
+    @ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "stock_id")
+	private MedicineStock stock;
+    
+    
 	@Column(nullable=false)
 	private Integer quantity;
 	
