@@ -266,28 +266,39 @@ public class AlertServiceImpl implements AlertService {
     @Transactional(readOnly = true)
     public List<AlertResponseDto> getPendingRequests() {
 
-        return alertRepository.findByStatus(AlertStatus.PENDING)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
+        return alertRepository.findByStatusAndAlertTypeInOrderByCreatedAtDesc(
+                AlertStatus.PENDING,
+                List.of(
+                        AlertType.LOW_STOCK,
+                        AlertType.OUT_OF_STOCK,
+                        AlertType.NEAR_EXPIRY,
+                        AlertType.EXPIRED
+                )
+        )
+        .stream()
+        .map(this::mapToResponse)
+        .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<AlertResponseDto> getManualRequests() {
 
-        return alertRepository.findByAlertTypeInOrderByCreatedAtDesc(
+        return alertRepository.findByAlertTypeInAndStatusOrderByCreatedAtDesc(
                 List.of(
                         AlertType.RESTOCK_REQUEST,
                         AlertType.CUSTOMER_DEMAND,
                         AlertType.SPECIAL_ORDER,
                         AlertType.NEW_MEDICINE,
                         AlertType.OTHER
-                ))
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
+                ),
+                AlertStatus.PENDING
+        )
+        .stream()
+        .map(this::mapToResponse)
+        .toList();
     }
+    
     @Override
     public AlertResponseDto approveRequest(Long alertId) {
 

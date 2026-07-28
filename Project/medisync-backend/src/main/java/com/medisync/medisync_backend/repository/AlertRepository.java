@@ -1,7 +1,7 @@
 package com.medisync.medisync_backend.repository;
 
 import java.util.List;
-import java.util.Optional;
+
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -17,9 +17,6 @@ import com.medisync.medisync_backend.entity.AlertStatus;
 public interface AlertRepository extends JpaRepository<Alert, Long> {
 
 	
-	
-    // System Generated Alerts
-    List<Alert> findByStatusOrderByCreatedAtDesc(AlertStatus status);
 
     List<Alert> findByStatusIn(List<AlertStatus> statuses);
     
@@ -27,20 +24,17 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
     
     List<Alert> findByAlertTypeInOrderByCreatedAtDesc(List<AlertType> alertTypes);
     
+    List<Alert> findByAlertTypeInAndStatusOrderByCreatedAtDesc(List<AlertType> alertTypes,
+            AlertStatus status
+    );
+    List<Alert> findByStatusAndAlertTypeInOrderByCreatedAtDesc(
+            AlertStatus status,
+            List<AlertType> alertTypes
+    );
+    
     // Requests sent to Admin
     List<Alert> findByStatusInOrderByCreatedAtDesc(List<AlertStatus> statuses);
-    
-    Optional<Alert> findByMedicineAndAlertTypeAndStatus(
-	        Medicine medicine,
-	        AlertType alertType,
-	        AlertStatus status
-	);
-	
-	Optional<Alert> findByMedicineStockAndAlertTypeAndStatus(
-	        MedicineStock medicineStock,
-	        AlertType alertType,
-	        AlertStatus status
-	);
+ 
 	
 	List<Alert> findByMedicineAndAlertTypeAndStatusIn(
 	        Medicine medicine,
