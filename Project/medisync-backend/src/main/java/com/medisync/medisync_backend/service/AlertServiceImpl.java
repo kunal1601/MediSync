@@ -273,6 +273,22 @@ public class AlertServiceImpl implements AlertService {
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public List<AlertResponseDto> getManualRequests() {
+
+        return alertRepository.findByAlertTypeInOrderByCreatedAtDesc(
+                List.of(
+                        AlertType.RESTOCK_REQUEST,
+                        AlertType.CUSTOMER_DEMAND,
+                        AlertType.SPECIAL_ORDER,
+                        AlertType.NEW_MEDICINE,
+                        AlertType.OTHER
+                ))
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+    @Override
     public AlertResponseDto approveRequest(Long alertId) {
 
         Alert alert = alertRepository.findById(alertId)
