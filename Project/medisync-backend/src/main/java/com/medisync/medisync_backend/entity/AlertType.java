@@ -9,5 +9,6 @@ public enum AlertType {
 
     RESTOCK_REQUEST,
     CUSTOMER_DEMAND,
-    SPECIAL_ORDER
+    SPECIAL_ORDER,
+    OTHER
 }

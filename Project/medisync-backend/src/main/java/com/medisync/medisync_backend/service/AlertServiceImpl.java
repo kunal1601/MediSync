@@ -171,7 +171,7 @@ public class AlertServiceImpl implements AlertService {
     @Transactional(readOnly = true)
     public List<AlertResponseDto> getRequestsSentToAdmin() {
 
-        return alertRepository.findByStatusIn(
+        return alertRepository.findByStatusInOrderByCreatedAtDesc(
                 List.of(
                         AlertStatus.PENDING,
                         AlertStatus.APPROVED,
@@ -212,11 +212,25 @@ public class AlertServiceImpl implements AlertService {
             }
         }
 
+        String description = requestDto.getDescription() != null
+                ? requestDto.getDescription().trim()
+                : "";
+
+        if (requestDto.getAlertType() == AlertType.OTHER
+                && requestDto.getCustomRequestType() != null
+                && !requestDto.getCustomRequestType().isBlank()) {
+
+            String customType = requestDto.getCustomRequestType().trim();
+            description = description.isEmpty()
+                    ? "Request type: " + customType
+                    : "Request type: " + customType + " — " + description;
+        }
+
         Alert alert = Alert.builder()
                 .medicine(medicine)
                 .requestedMedicineName(requestedMedicineName)
                 .alertType(requestDto.getAlertType())
-                .description(requestDto.getDescription())
+                .description(description.isEmpty() ? "No additional details provided." : description)
                 .status(AlertStatus.PENDING)
                 .build();
 

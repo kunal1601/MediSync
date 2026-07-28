@@ -31,5 +31,10 @@ public class AlertRequestDto {
      * Pharmacist notes.
      */
     private String description;
-    
+
+    /*
+     * Used when alertType is OTHER.
+     */
+    private String customRequestType;
+
 }
