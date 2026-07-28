@@ -56,4 +56,5 @@ public interface MedicineStockRepository extends JpaRepository<MedicineStock, In
     	        """
     	)
     	Page<MedicineStock> findAllOrderByMedicineName(Pageable pageable);
+    
 }
