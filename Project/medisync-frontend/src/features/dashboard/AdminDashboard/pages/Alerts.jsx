@@ -106,7 +106,7 @@ const toggleSection = (section) => {
         <div className="flex items-center gap-3">
           <AlertTriangle className="text-amber-500" size={20} />
           <span className="font-semibold">
-            Low Stock Alerts ({lowStockAlerts.length})
+            Out of Stock ({lowStockAlerts.length})
           </span>
         </div>
 
@@ -292,31 +292,87 @@ const toggleSection = (section) => {
 )}
 
           {activeTab === 'Pending Orders' && (
-            <div className="space-y-4">
-              {pendingOrders.length === 0 ? (
-                <div className="rounded-2xl border border-medisync-border bg-slate-50 p-6 text-center text-sm text-medisync-muted">
-                  No pending orders at the moment. Mark extra medicines as yet to place order and save them to see pending items here.
-                </div>
-              ) : (
-                pendingOrders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="rounded-2xl border border-medisync-border bg-white p-4 shadow-sm"
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <div>
-                        <h3 className="font-semibold text-medisync-text">{order.title}</h3>
-                        <p className="mt-1 text-sm text-medisync-muted">{order.description}</p>
-                      </div>
-                      <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
-                        Pending
-                      </span>
-                    </div>
-                  </div>
-                ))
-              )}
+  <div className="space-y-4">
+    {pendingOrders.length === 0 ? (
+      <div className="rounded-2xl border border-medisync-border bg-slate-50 p-6 text-center text-sm text-medisync-muted">
+        No pending orders at the moment.
+      </div>
+    ) : (
+      pendingOrders.map((order) => (
+        <div
+          key={order.id}
+          className="rounded-2xl border border-medisync-border bg-white p-5 shadow-sm"
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-medisync-text">
+                {order.title}
+              </h3>
+
+              <p className="mt-1 text-sm text-medisync-muted">
+                {order.description}
+              </p>
             </div>
-          )}
+
+            <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-700">
+              Pending
+            </span>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-medisync-border bg-slate-50 px-4 py-3">
+              <input
+                type="radio"
+                name={`pending-status-${order.id}`}
+                value="Order Placed"
+                checked={draftStatuses[order.id] === "Order Placed"}
+                onChange={() =>
+                  handleDraftStatus(order.id, "Order Placed")
+                }
+                className="h-4 w-4 accent-medisync-teal"
+              />
+
+              <span className="text-sm font-medium text-medisync-text">
+                Order Placed
+              </span>
+            </label>
+
+            <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-medisync-border bg-slate-50 px-4 py-3">
+              <input
+                type="radio"
+                name={`pending-status-${order.id}`}
+                value="Yet to place Order"
+                checked={draftStatuses[order.id] === "Yet to place Order"}
+                onChange={() =>
+                  handleDraftStatus(order.id, "Yet to place Order")
+                }
+                className="h-4 w-4 accent-medisync-teal"
+              />
+
+              <span className="text-sm font-medium text-medisync-text">
+                Yet to place Order
+              </span>
+            </label>
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => handleSave(order.id)}
+              className="cursor-pointer rounded-lg bg-medisync-teal px-5 py-2 text-sm font-semibold text-white transition hover:bg-medisync-teal-dark"
+            >
+              Save
+            </button>
+
+            <span className="text-sm text-medisync-muted">
+              Current status: <strong>{order.status}</strong>
+            </span>
+          </div>
+        </div>
+      ))
+    )}
+  </div>
+)}
 
           {activeTab === 'Extra Medicines' && (
             <div className="space-y-4">
