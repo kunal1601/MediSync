@@ -18,6 +18,26 @@ const PharmacistDashboardPage = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [topSellingMedicine,setTopSellingMedicine]=useState([]);
   const [todaysAlerts, setTodaysAlerts] = useState([]);
+  const formatLabel = (value) =>
+    (value || "")
+        .replace(/_/g, " ")
+        .toLowerCase()
+        .replace(/\b\w/g, c => c.toUpperCase());
+
+const getPriority = (type) => {
+    switch (type) {
+        case "OUT_OF_STOCK":
+        case "EXPIRED":
+            return "High";
+
+        case "LOW_STOCK":
+        case "NEAR_EXPIRY":
+            return "Medium";
+
+        default:
+            return "Low";
+    }
+};
   const [statistics,setStatistics]=useState( {totalSales: 0,
     billsToday: 0,
     lowStockItems: 0,
@@ -194,19 +214,19 @@ const PharmacistDashboardPage = () => {
 
 </div>
 
-{/* Alerts + Calendar + Top Selling */}
-<div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
+{/* Alerts + Calendar */}
+<div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-stretch">
 
     {/* Alerts */}
-    <div className="xl:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm">
+    <div className="xl:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden xl:h-[340px]">
 
-        <div className="px-6 py-4 border-b border-slate-100">
-            <h3 className="font-bold text-lg text-slate-800">
+        <div className="px-5 py-3 border-b border-slate-100 shrink-0">
+            <h3 className="font-bold text-base text-slate-800">
                 Today's Alerts
             </h3>
         </div>
 
-      <div className="p-5 space-y-4">
+      <div className="p-4 space-y-2 overflow-y-auto flex-1 min-h-0 pr-2 dashboard-alerts-scroll">
 
         {todaysAlerts.length === 0 ? (
 
@@ -228,7 +248,7 @@ const PharmacistDashboardPage = () => {
 
                     <div
                         key={index}
-                        className="flex items-center justify-between p-4 rounded-xl bg-slate-50 border border-slate-100 hover:border-brand-secondary/30 hover:shadow-sm transition"
+                        className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100 hover:border-brand-secondary/30 hover:shadow-sm transition"
                     >
                         <div>
                             <p className="font-semibold">
@@ -236,18 +256,18 @@ const PharmacistDashboardPage = () => {
                             </p>
 
                             <p className="text-sm text-slate-500">
-                                {alert.alertType}
+                                 {formatLabel(alert.alertType)}
                             </p>
                         </div>
 
                         <span
                             className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                alert.priority === "High"
+                                getPriority(alert.alertType) === "High"
                                     ? "bg-red-100 text-red-600"
                                     : "bg-orange-100 text-orange-600"
                             }`}
                         >
-                            {alert.priority}
+                            {formatLabel(alert.alertType)}
                         </span>
 
                     </div>
@@ -261,60 +281,59 @@ const PharmacistDashboardPage = () => {
     </div>
 
     {/* Calendar */}
-    <div className="xl:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm">
+    <div className="xl:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden xl:h-[340px]">
 
-        <div className="px-6 py-4 border-b border-slate-100">
-            <h3 className="font-bold text-lg text-slate-800">
+        <div className="px-5 py-3 border-b border-slate-100 shrink-0">
+            <h3 className="font-bold text-base text-slate-800">
                 Daily Sales Calendar
             </h3>
         </div>
 
-        <div className="p-6">
+        <div className="p-4 flex-1 min-h-0">
 
-    <div className="grid md:grid-cols-2 gap-6">
+    <div className="grid md:grid-cols-2 gap-4 h-full">
 
         {/* Calendar */}
-        <div>
+        <div className="min-h-0">
             <Calendar
+                className="dashboard-calendar-compact"
                 onChange={(date) => setSelectedDate(date)}
                 value={selectedDate}
             />
         </div>
 
         {/* Sales Analytics */}
-        <div className="space-y-4">
+        <div className="space-y-2">
 
-            <div className="rounded-xl bg-brand-secondary/10 p-4">
-                <p className="text-sm text-slate-500">
+            <div className="rounded-lg bg-brand-secondary/10 p-3">
+                <p className="text-xs text-slate-500">
                     Sales Today
                 </p>
 
-                <h3 className="text-3xl font-bold text-brand-secondary mt-1">
+                <h3 className="text-2xl font-bold text-brand-secondary mt-0.5">
                    ₹{dailySales.salesToday}
                 </h3>
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-sm text-slate-500">
+            <div className="rounded-lg bg-slate-50 p-3">
+                <p className="text-xs text-slate-500">
                     Bills Generated
                 </p>
 
-                <h3 className="text-2xl font-bold text-slate-800 mt-1">
+                <h3 className="text-xl font-bold text-slate-800 mt-0.5">
                     {dailySales.billsGenerated}
                 </h3>
             </div>
 
-            <div className="rounded-xl bg-slate-50 p-4">
-                <p className="text-sm text-slate-500">
+            <div className="rounded-lg bg-slate-50 p-3">
+                <p className="text-xs text-slate-500">
                     Avg Bill Value
                 </p>
 
-                <h3 className="text-2xl font-bold text-slate-800 mt-1">
+                <h3 className="text-xl font-bold text-slate-800 mt-0.5">
                     ₹{Number(dailySales.avgBillValue).toFixed(2)}
                 </h3>
             </div>
-
-           
 
         </div>
 

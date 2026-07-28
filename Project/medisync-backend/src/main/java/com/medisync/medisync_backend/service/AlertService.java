@@ -21,7 +21,7 @@ public interface AlertService {
     // Pharmacist sends a system alert to Admin
     AlertResponseDto sendAlertToAdmin(Long alertId);
 
-    // Admin Dashboard
+    List<AlertResponseDto> getManualRequests();
 
     // Pending Requests
     List<AlertResponseDto> getPendingRequests();

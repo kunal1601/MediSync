@@ -71,13 +71,16 @@ public class AlertServiceImpl implements AlertService {
             }
 
             // Check if NEW alert already exists
-            boolean alreadyExists = alertRepository
-                    .findByMedicineAndAlertTypeAndStatus(
+            boolean alreadyExists = !alertRepository
+                    .findByMedicineAndAlertTypeAndStatusIn(
                             medicine,
                             alertType,
-                            AlertStatus.NEW
+                            List.of(
+                                    AlertStatus.NEW,
+                                    AlertStatus.PENDING
+                            )
                     )
-                    .isPresent();
+                    .isEmpty();
 
             if (alreadyExists) {
                 continue;
@@ -127,13 +130,16 @@ public class AlertServiceImpl implements AlertService {
             }
 
             // Duplicate check
-            boolean alreadyExists = alertRepository
-                    .findByMedicineStockAndAlertTypeAndStatus(
+            boolean alreadyExists = !alertRepository
+                    .findByMedicineStockAndAlertTypeAndStatusIn(
                             stock,
                             alertType,
-                            AlertStatus.NEW
+                            List.of(
+                                    AlertStatus.NEW,
+                                    AlertStatus.PENDING
+                            )
                     )
-                    .isPresent();
+                    .isEmpty();
 
             if (alreadyExists) {
                 continue;
@@ -171,7 +177,7 @@ public class AlertServiceImpl implements AlertService {
     @Transactional(readOnly = true)
     public List<AlertResponseDto> getRequestsSentToAdmin() {
 
-        return alertRepository.findByStatusIn(
+        return alertRepository.findByStatusInOrderByCreatedAtDesc(
                 List.of(
                         AlertStatus.PENDING,
                         AlertStatus.APPROVED,
@@ -212,11 +218,25 @@ public class AlertServiceImpl implements AlertService {
             }
         }
 
+        String description = requestDto.getDescription() != null
+                ? requestDto.getDescription().trim()
+                : "";
+
+        if (requestDto.getAlertType() == AlertType.OTHER
+                && requestDto.getCustomRequestType() != null
+                && !requestDto.getCustomRequestType().isBlank()) {
+
+            String customType = requestDto.getCustomRequestType().trim();
+            description = description.isEmpty()
+                    ? "Request type: " + customType
+                    : "Request type: " + customType + " — " + description;
+        }
+
         Alert alert = Alert.builder()
                 .medicine(medicine)
                 .requestedMedicineName(requestedMedicineName)
                 .alertType(requestDto.getAlertType())
-                .description(requestDto.getDescription())
+                .description(description.isEmpty() ? "No additional details provided." : description)
                 .status(AlertStatus.PENDING)
                 .build();
 
@@ -246,12 +266,39 @@ public class AlertServiceImpl implements AlertService {
     @Transactional(readOnly = true)
     public List<AlertResponseDto> getPendingRequests() {
 
-        return alertRepository.findByStatus(AlertStatus.PENDING)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
+        return alertRepository.findByStatusAndAlertTypeInOrderByCreatedAtDesc(
+                AlertStatus.PENDING,
+                List.of(
+                        AlertType.LOW_STOCK,
+                        AlertType.OUT_OF_STOCK,
+                        AlertType.NEAR_EXPIRY,
+                        AlertType.EXPIRED
+                )
+        )
+        .stream()
+        .map(this::mapToResponse)
+        .toList();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<AlertResponseDto> getManualRequests() {
+
+        return alertRepository.findByAlertTypeInAndStatusOrderByCreatedAtDesc(
+                List.of(
+                        AlertType.RESTOCK_REQUEST,
+                        AlertType.CUSTOMER_DEMAND,
+                        AlertType.SPECIAL_ORDER,
+                        AlertType.NEW_MEDICINE,
+                        AlertType.OTHER
+                ),
+                AlertStatus.PENDING
+        )
+        .stream()
+        .map(this::mapToResponse)
+        .toList();
+    }
+    
     @Override
     public AlertResponseDto approveRequest(Long alertId) {
 
