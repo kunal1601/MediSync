@@ -14,7 +14,7 @@ import com.medisync.medisync_backend.entity.Medicine;
 import com.medisync.medisync_backend.entity.MedicineStock;
 
 @Repository
-public interface MedicineStockRepository extends JpaRepository<MedicineStock, Integer> {
+public interface MedicineStockRepository extends JpaRepository<MedicineStock, Long> {
 	
 	@Query("""
 		    SELECT ms
