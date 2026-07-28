@@ -21,6 +21,7 @@ export default function Alerts() {
   )
   const [hiddenOrders, setHiddenOrders] = useState([])
   const [systemAlerts, setSystemAlerts] = useState([])
+  const [pendingRequests, setPendingRequests] = useState([])
   const [openSection, setOpenSection] = useState(null)
 
   const handleDraftStatus = (orderId, status) => {
@@ -39,11 +40,43 @@ export default function Alerts() {
     setHiddenOrders((current) => [...current, orderId])
   }
 
-  const pendingOrders = orders.filter((order) => order.status === 'Yet to place Order')
+  const pendingOrders = pendingRequests;
   const visibleExtraOrders = orders.filter((order) => !hiddenOrders.includes(order.id))
   useEffect(() => {
   fetchAlerts()
-}, [])
+  fetchPendingRequests();
+ 
+}, []);
+
+const fetchPendingRequests = async () => {
+  try {
+    const response = await API.get("/alerts/pending");
+
+    setPendingRequests(response.data);
+
+    setDraftStatuses((prev) => ({
+      ...prev,
+      ...Object.fromEntries(
+        response.data.map((item) => [item.alertId, item.status])
+      ),
+    }));
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+
+const approveRequest = async (alertId) => {
+  try {
+    await API.put(`/alerts/${alertId}/approve`);
+
+    fetchPendingRequests();
+    fetchAlerts();
+
+  } catch (err) {
+    console.error(err);
+  }
+};
 
 const fetchAlerts = async () => {
   try {
@@ -53,6 +86,7 @@ const fetchAlerts = async () => {
     console.error(err)
   }
 }
+
 
 const lowStockAlerts = systemAlerts.filter(
   (a) =>
@@ -300,13 +334,13 @@ const toggleSection = (section) => {
     ) : (
       pendingOrders.map((order) => (
         <div
-          key={order.id}
+          key={order.alertId}
           className="rounded-2xl border border-medisync-border bg-white p-5 shadow-sm"
         >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <h3 className="text-lg font-semibold text-medisync-text">
-                {order.title}
+                {order.medicineName}
               </h3>
 
               <p className="mt-1 text-sm text-medisync-muted">
@@ -323,11 +357,11 @@ const toggleSection = (section) => {
             <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-medisync-border bg-slate-50 px-4 py-3">
               <input
                 type="radio"
-                name={`pending-status-${order.id}`}
+                name={`pending-status-${order.alertId}`}
                 value="Order Placed"
-                checked={draftStatuses[order.id] === "Order Placed"}
+                checked={draftStatuses[order.alertId] === "Order Placed"}
                 onChange={() =>
-                  handleDraftStatus(order.id, "Order Placed")
+                  handleDraftStatus(order.alertId, "Order Placed")
                 }
                 className="h-4 w-4 accent-medisync-teal"
               />
@@ -340,11 +374,11 @@ const toggleSection = (section) => {
             <label className="flex cursor-pointer items-center gap-3 rounded-2xl border border-medisync-border bg-slate-50 px-4 py-3">
               <input
                 type="radio"
-                name={`pending-status-${order.id}`}
+                name={`pending-status-${order.alertId}`}
                 value="Yet to place Order"
-                checked={draftStatuses[order.id] === "Yet to place Order"}
+                checked={draftStatuses[order.alertId] === "Yet to place Order"}
                 onChange={() =>
-                  handleDraftStatus(order.id, "Yet to place Order")
+                  handleDraftStatus(order.alertId, "Yet to place Order")
                 }
                 className="h-4 w-4 accent-medisync-teal"
               />
@@ -358,7 +392,7 @@ const toggleSection = (section) => {
           <div className="mt-5 flex flex-wrap items-center gap-3">
             <button
               type="button"
-              onClick={() => handleSave(order.id)}
+              onClick={() => approveRequest(order.alertId)}
               className="cursor-pointer rounded-lg bg-medisync-teal px-5 py-2 text-sm font-semibold text-white transition hover:bg-medisync-teal-dark"
             >
               Save
