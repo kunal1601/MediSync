@@ -48,7 +48,7 @@ const getPriority = (type) => {
     billsGenerated: 0,
     avgBillValue: 0,
     });
-  const filterTabs=[
+    const filterTabs=[
         "By Drug Type",
         "By Company Name",
         "By Year",
@@ -105,11 +105,11 @@ const getPriority = (type) => {
         console.log(data);
         const colors = [
             "bg-teal-400",
-            "bg-cyan-400",
-            "bg-blue-400",
-            "bg-violet-400",
-            "bg-pink-400",
-            "bg-green-400"
+            "bg-teal-400",
+            "bg-teal-400",
+            "bg-teal-400",
+            "bg-teal-400",
+            "bg-teal-400"
         ];
 
         const maxSales =
@@ -119,7 +119,7 @@ const getPriority = (type) => {
 
         const formatted = data.map((item, index) => ({
             category: item.label,
-            value: item.sales,
+            sales : item.sales,
             total: maxSales,
             color: colors[index % colors.length],
             pattern: index % 2 === 0
@@ -166,6 +166,22 @@ const getPriority = (type) => {
         }
 
     };
+     // Find the maximum target value from the chart
+            const maxValue =
+                chartData.length > 0
+                    ? Math.max(...chartData.map(item => item.total))
+                    : 100;
+            // Round it to the next 100
+            const roundedMax = Math.ceil(maxValue / 100) * 100;
+
+            // Create Y-axis labels
+            const yAxisValues = [
+                    roundedMax,
+                    Math.round(roundedMax * 0.75),
+                    Math.round(roundedMax * 0.5),
+                    Math.round(roundedMax * 0.25),
+                    0,
+                    ];
 
   return (
     <div className="space-y-6 animate-fadeIn text-left">
@@ -455,29 +471,39 @@ const getPriority = (type) => {
           </div>
 
           {/* DATA DATA GRAPH VISUAL CONTAINER */}
-          <div className="w-full max-w-4xl grid grid-cols-[auto_1fr] gap-x-6 items-end pt-4 px-4">
+          <div className="w-full max-w-5xl grid grid-cols-[auto_1fr] gap-x-6 items-end pt-4 px-4">
             
             {/* Y-AXIS LABEL SCALES */}
             <div className="flex flex-col justify-between h-64 text-xs font-bold text-slate-600 pb-8 text-right pr-2 select-none">
-              <div className="flex items-center gap-2 justify-end relative">
-                <span className="absolute -left-12 rotate-270 whitespace-nowrap text-[10px] font-semibold text-slate-400 tracking-wider">
-                  Sales &rarr;
-                </span>
-                <span>5000</span>
-              </div>
-              <div>1000</div>
-              <div>500</div>
-              <div className="h-0 flex items-center justify-end">0</div>
-            </div>
+                {yAxisValues.map((value, index) => (
+                    <div
+                    key={index}
+                    className={`flex items-center justify-end relative ${
+                        index === yAxisValues.length - 1
+                        ? "h-0"
+                        : ""
+                    }`}
+                    >
+                    {index === 0 && (
+                        <span className="absolute -left-12 rotate-270 whitespace-nowrap text-[10px] font-semibold text-slate-400 tracking-wider">
+                        Sales →
+                        </span>
+                    )}
+
+                    <span>{value}</span>
+                    </div>
+                ))}
+                </div>
 
             {/* CHART DATA PLOT CANVAS GRID */}
             <div className="relative h-64 border-b-2 border-slate-300 flex items-end justify-between px-6 gap-4">
               
               {chartData.map((bar, idx) => {
                 // Calculate precise element percentage constraints
-                const fillHeight = (bar.value / bar.total) * 100;
+                const fillHeight = (bar.sales / bar.total) * 100;
                 const balanceHeight = 100 - fillHeight;
 
+                   
                 return (
                   <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full max-w-[90px] group">
                     <div className="w-full flex flex-col justify-end h-full rounded-t-sm overflow-hidden relative shadow-sm">
