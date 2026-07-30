@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.medisync.medisync_backend.dto.DailySalesResponse;
 import com.medisync.medisync_backend.dto.DashboardStatisticsResponse;
+import com.medisync.medisync_backend.dto.PharmacistNameResponse;
 import com.medisync.medisync_backend.dto.StockOverviewResponse;
 import com.medisync.medisync_backend.dto.TodaysAlertResponse;
 import com.medisync.medisync_backend.dto.TopSellingMedicineResponse;
@@ -82,5 +83,13 @@ public class PharmacistDashboardController {
 
         return ResponseEntity.ok(
                 dailySalesService.getDailySales(date));
+    }
+    
+    // Get Logged In Pharmacist Name
+    @GetMapping("/me")
+    public ResponseEntity<PharmacistNameResponse> getLoggedInPharmacist() {
+        return ResponseEntity.ok(
+        		dashboardStatisticsService.getLoggedInPharmacist()
+        );
     }
 }

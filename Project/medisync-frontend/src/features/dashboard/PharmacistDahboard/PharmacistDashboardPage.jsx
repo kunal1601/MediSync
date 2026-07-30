@@ -7,6 +7,7 @@ import { getTopSellingMedicines } from "./Services/TopSellingMedicine";
 import { getDashboardStatistics } from './Services/DashboardStatistics';
 import { getTodaysAlerts } from './Services/TodaysAlert';
 import { getDailySales } from './Services/Calender';
+import { getLoggedInPharmacist } from './Services/GetPharmacist';
 /**
  * View Component: Pharmacist Interactive Analytics Panel
  * Renders filter controls and stock tracking charts matching image_0f704d.png
@@ -14,17 +15,19 @@ import { getDailySales } from './Services/Calender';
 
 
 const PharmacistDashboardPage = () => {
+    //Hooks
   const [activeFilter, setActiveFilter] = useState('By Drug Type');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [topSellingMedicine,setTopSellingMedicine]=useState([]);
   const [todaysAlerts, setTodaysAlerts] = useState([]);
+  const [pharmacist, setPharmacist] = useState(null);
   const formatLabel = (value) =>
     (value || "")
         .replace(/_/g, " ")
         .toLowerCase()
         .replace(/\b\w/g, c => c.toUpperCase());
 
-const getPriority = (type) => {
+  const getPriority = (type) => {
     switch (type) {
         case "OUT_OF_STOCK":
         case "EXPIRED":
@@ -36,8 +39,9 @@ const getPriority = (type) => {
 
         default:
             return "Low";
-    }
-};
+        }
+    };
+    //Hook for dashboard statistics 
   const [statistics,setStatistics]=useState( {totalSales: 0,
     billsToday: 0,
     lowStockItems: 0,
@@ -48,7 +52,7 @@ const getPriority = (type) => {
     billsGenerated: 0,
     avgBillValue: 0,
     });
-  const filterTabs=[
+    const filterTabs=[
         "By Drug Type",
         "By Company Name",
         "By Year",
@@ -64,7 +68,7 @@ const getPriority = (type) => {
         fetchDashboardStatistics();
         fetchTodaysAlerts();
         fetchDailySales();
-
+        fetchLoggedInPharmacist();
         }, []);
         
         useEffect(() => {
@@ -97,44 +101,59 @@ const getPriority = (type) => {
 
         }
     };
+    //For Stock Overview
     const fetchStockOverview = async (filter) => {
 
-    try {
+        try {
 
-        const data = await getStockOverview(filter);
-        console.log(data);
-        const colors = [
-            "bg-teal-400",
-            "bg-cyan-400",
-            "bg-blue-400",
-            "bg-violet-400",
-            "bg-pink-400",
-            "bg-green-400"
-        ];
+            const data = await getStockOverview(filter);
+            console.log(data);
+            const colors = [
+                "bg-teal-400",
+                "bg-teal-400",
+                "bg-teal-400",
+                "bg-teal-400",
+                "bg-teal-400",
+                "bg-teal-400"
+            ];
 
-        const maxSales =
-                data.length>0
-                ? Math.max(...data.map(item=>item.sales))
-                :1;
+            const maxSales =
+                    data.length>0
+                    ? Math.max(...data.map(item=>item.sales))
+                    :1;
 
-        const formatted = data.map((item, index) => ({
-            category: item.label,
-            value: item.sales,
-            total: maxSales,
-            color: colors[index % colors.length],
-            pattern: index % 2 === 0
-        }));
+            const formatted = data.map((item, index) => ({
+                category: item.label,
+                sales : item.sales,
+                total: maxSales,
+                color: colors[index % colors.length],
+                pattern: index % 2 === 0
+            }));
 
-        setChartData(formatted);
+            setChartData(formatted);
 
-    } catch (error) {
+        } catch (error) {
 
-        console.error(error);
+            console.error(error);
 
-    }
+        }
 
-};
+    };
+    //For getting current Logged in Pharmacist Name
+    const fetchLoggedInPharmacist = async () => {
 
+        try {
+
+            const data = await getLoggedInPharmacist();
+            setPharmacist(data);
+
+        } catch (error) {
+
+            console.error(error);
+
+        }
+    };
+    //For Dashboard Statistics Cards
     const fetchDashboardStatistics=async()=>{
         try{
             const data=await getDashboardStatistics();
@@ -143,6 +162,7 @@ const getPriority = (type) => {
             console.log(err);
         }
     }
+    //For Top Selling medicines
     const fetchTopSellingMedicine=async()=>{
         try{
             const data= await getTopSellingMedicines();
@@ -166,19 +186,50 @@ const getPriority = (type) => {
         }
 
     };
+     // Find the maximum target value from the chart
+    const maxValue =
+        chartData.length > 0
+        ? Math.max(...chartData.map(item => item.total))
+            : 100;
+    // Round it to the next 100
+    const roundedMax = Math.ceil(maxValue / 100) * 100;
 
+    // Create Y-axis labels
+    const yAxisValues = [
+        roundedMax,
+        Math.round(roundedMax * 0.75),
+        Math.round(roundedMax * 0.5),
+        Math.round(roundedMax * 0.25),
+        0,
+    ];
+    //For Greeting based on current time
+    const getGreeting = () => {
+        const hour = new Date().getHours();
+
+        if (hour < 12) {
+            return "Good Morning";
+        } else if (hour < 17) {
+            return "Good Afternoon";
+        } else {
+            return "Good Evening";
+        }
+    };
   return (
     <div className="space-y-6 animate-fadeIn text-left">
      {/* Welcome Banner */}
-<div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-    <h1 className="text-2xl font-bold text-slate-800">
-        Good Morning, Pharmacist 👋
-    </h1>
+    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+        <h1 className="text-2xl font-bold text-slate-800">
+            {getGreeting()},{" "}
+        {pharmacist
+            ? `${pharmacist.firstName} ${pharmacist.lastName}`
+            : "Pharmacist"}{" "}
+        👋
+        </h1>
 
-    <p className="text-slate-500 mt-2">
-        Here's today's pharmacy performance overview.
-    </p>
-</div>
+        <p className="text-slate-500 mt-2">
+            Here's today's pharmacy performance overview.
+        </p>
+    </div>
 
 {/* Statistics Cards */}
 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
@@ -455,29 +506,39 @@ const getPriority = (type) => {
           </div>
 
           {/* DATA DATA GRAPH VISUAL CONTAINER */}
-          <div className="w-full max-w-4xl grid grid-cols-[auto_1fr] gap-x-6 items-end pt-4 px-4">
+          <div className="w-full max-w-5xl grid grid-cols-[auto_1fr] gap-x-6 items-end pt-4 px-4">
             
             {/* Y-AXIS LABEL SCALES */}
             <div className="flex flex-col justify-between h-64 text-xs font-bold text-slate-600 pb-8 text-right pr-2 select-none">
-              <div className="flex items-center gap-2 justify-end relative">
-                <span className="absolute -left-12 rotate-270 whitespace-nowrap text-[10px] font-semibold text-slate-400 tracking-wider">
-                  Sales &rarr;
-                </span>
-                <span>5000</span>
-              </div>
-              <div>1000</div>
-              <div>500</div>
-              <div className="h-0 flex items-center justify-end">0</div>
-            </div>
+                {yAxisValues.map((value, index) => (
+                    <div
+                    key={index}
+                    className={`flex items-center justify-end relative ${
+                        index === yAxisValues.length - 1
+                        ? "h-0"
+                        : ""
+                    }`}
+                    >
+                    {index === 0 && (
+                        <span className="absolute -left-12 rotate-270 whitespace-nowrap text-[10px] font-semibold text-slate-400 tracking-wider">
+                        Sales →
+                        </span>
+                    )}
+
+                    <span>{value}</span>
+                    </div>
+                ))}
+                </div>
 
             {/* CHART DATA PLOT CANVAS GRID */}
             <div className="relative h-64 border-b-2 border-slate-300 flex items-end justify-between px-6 gap-4">
               
               {chartData.map((bar, idx) => {
                 // Calculate precise element percentage constraints
-                const fillHeight = (bar.value / bar.total) * 100;
+                const fillHeight = (bar.sales / bar.total) * 100;
                 const balanceHeight = 100 - fillHeight;
 
+                   
                 return (
                   <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full max-w-[90px] group">
                     <div className="w-full flex flex-col justify-end h-full rounded-t-sm overflow-hidden relative shadow-sm">

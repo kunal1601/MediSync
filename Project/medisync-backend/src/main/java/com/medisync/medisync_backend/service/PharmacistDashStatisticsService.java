@@ -1,12 +1,17 @@
 package com.medisync.medisync_backend.service;
 
+
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.medisync.medisync_backend.dto.DashboardStatisticsResponse;
-
+import com.medisync.medisync_backend.dto.PharmacistNameResponse;
+import com.medisync.medisync_backend.entity.Pharmacist;
 import com.medisync.medisync_backend.repository.PharmacistDashStatisticsRepository;
-
+import com.medisync.medisync_backend.repository.PharmacistRepository;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 @Service
 public class PharmacistDashStatisticsService {
 	 // Repository used to fetch dashboard statistics from the database
@@ -42,5 +47,30 @@ public class PharmacistDashStatisticsService {
                 pharmacistDashStatisticsRepository.getExpiringMedicines());
      // Return populated dashboard statistics
         return response;
+    }
+    
+    @Autowired
+    private  PharmacistRepository pharmacistRepository;
+
+    public PharmacistNameResponse getLoggedInPharmacist() {
+
+        Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
+
+        String username = authentication.getName();
+
+System.out.println(authentication);
+System.out.println(authentication.getAuthorities());
+System.out.println(authentication.getName());
+        Pharmacist pharmacist =
+                pharmacistRepository.findByUsernameOrEmail(username, username)
+                        .orElseThrow(() ->
+                                new RuntimeException("Pharmacist not found"));
+
+        return PharmacistNameResponse.builder()
+             
+                .firstName(pharmacist.getFirstName())
+                .lastName(pharmacist.getLastName())
+                .build();
     }
 }

@@ -23,7 +23,7 @@ public interface StockOverviewRepository extends JpaRepository<SalesInvoiceItem,
 			FROM SalesInvoiceItem sii
 			JOIN sii.medicine m
 			GROUP BY m.manufacturer
-			ORDER BY SUM(sii.quantity) DESC""")
+			ORDER BY SUM(sii.quantity) DESC LIMIT 10""")
 	List<Object[]> getSalesByCompanyName();
 	
 	
@@ -35,7 +35,7 @@ public interface StockOverviewRepository extends JpaRepository<SalesInvoiceItem,
 			JOIN sales_invoices si
 			ON sii.invoice_id=si.invoice_id
 			GROUP BY YEAR(si.created_at)
-			ORDER BY YEAR(si.created_at)""",nativeQuery=true)
+			ORDER BY YEAR(si.created_at) """,nativeQuery=true)
 	List<Object[]> getSalesByYear();
 	
 	 // 4. Most Sold Medicines
@@ -44,7 +44,7 @@ public interface StockOverviewRepository extends JpaRepository<SalesInvoiceItem,
             FROM SalesInvoiceItem sii
             JOIN sii.medicine m
             GROUP BY m.name
-            ORDER BY SUM(sii.quantity) DESC
+            ORDER BY SUM(sii.quantity) DESC LIMIT 7
             """)
     List<Object[]> getMostSoldMedicines();
 }
