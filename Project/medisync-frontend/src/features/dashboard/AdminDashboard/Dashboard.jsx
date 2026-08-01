@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import { Users } from 'lucide-react'
 import {  useEffect } from "react";
 
@@ -30,7 +30,7 @@ import {
 } from './data/dummyData'
 import { getProfitLoss } from './Services/ProfitLoss';
 import { getPharmacistOnBoard, getAllPharmacists } from './Services/PharmacistOnBoard';
-
+import {getLeavesByDate} from './Services/PharmacistLeave';
 const formatCurrency = (n) =>
   new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -416,10 +416,40 @@ export default function Dashboard() {
   const [selectedPharmacist, setSelectedPharmacist] = useState(null)
   const [incomeData, setIncomeData] = useState([]);
   const [pharmacistOnBoard, setPharmacistOnBoard] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [leaveData, setLeaveData] = useState([]);
+  const leaveCardRef = useRef(null);     {/* for cal card close  */}
    useEffect(() => {
-        loadPharmacists();
+          loadPharmacists();
+        }, []);
+        //      {/* fo cal card close */} below useffect
+   useEffect(() => {
+        const handleOutsideClick = (event) => {
+            if (
+                leaveCardRef.current &&
+                !leaveCardRef.current.contains(event.target)
+            ) {
+                setSelectedDate(null);
+                setLeaveData([]);
+            }
+        };
+        document.addEventListener("mousedown", handleOutsideClick);
+        return () => {
+            document.removeEventListener("mousedown", handleOutsideClick);
+        };
     }, []);
+    const handleDateClick = async (date) => {
 
+        setSelectedDate(date);
+
+        try {
+            const data = await getLeavesByDate(date);
+             console.log("Leave Data:", data);
+            setLeaveData(data);
+        } catch (error) {
+            console.error(error);
+        }
+    };
     const loadPharmacists = async () => {
         try {
             const data = await getAllPharmacists();
@@ -445,19 +475,12 @@ export default function Dashboard() {
   const stockData = stockDataByFilter[activeStockFilter]
   // const incomeData = incomeGrowthByPeriod[incomePeriod]
     const handleViewPharmacist = async (id) => {
-
       try {
-
         const data = await getPharmacistOnBoard(id);
-
         setSelectedPharmacist(data);
-
       } catch (error) {
-
         console.error("Failed to fetch pharmacist details", error);
-
       }
-
     };
   return (
     <div className="space-y-5">
@@ -509,9 +532,66 @@ export default function Dashboard() {
           <ProfitLossChart />
         </SectionCard>
         <SectionCard title="Calendar" className="lg:col-span-2">
-          <CalendarWidget />
+          <CalendarWidget  onDateClick={handleDateClick} />
         </SectionCard>
       </div>
+        {selectedDate && (
+          //      {/* fo cal card close only below line*/}
+            <div ref={leaveCardRef}>
+              
+              <SectionCard title={`Pharmacists on Leave (${selectedDate})`}>
+                {leaveData.length === 0 ? (
+                    <div className="text-center py-8 text-slate-500">
+                        No pharmacists are on leave.
+                    </div>
+                ) : (
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                        {leaveData.map((item, index) => (
+                            <div
+                                key={index}
+                                className="rounded-2xl border border-medisync-border bg-slate-50 p-5"
+                            >
+                                <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">
+                                    Pharmacist
+                                </p>
+                                <p className="mt-2 text-sm font-semibold text-medisync-text">
+                                    {item.pharmacistName}
+                                </p>
+                                <div className="mt-4 space-y-3">
+                                    <div>
+                                        <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">
+                                            Shift
+                                        </p>
+                                        <p className="text-sm font-medium">
+                                            {item.workingShift}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">
+                                            Leave Type
+                                        </p>
+                                        <p className="text-sm font-medium">
+                                            {item.leaveType}
+                                        </p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">
+                                            Reason
+                                        </p>
+                                        <p className="text-sm font-medium">
+                                            {item.leaveReason}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </SectionCard>
+            {/* fo cal card close */}
+          </div>
+        )}
+   
 
       <SectionCard
         title="Stock overview"
