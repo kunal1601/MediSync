@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo,  useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
-import { calendarEvents } from '../data/dummyData'
+
+import { getLeaveDates } from '../Services/PharmacistLeave'
 
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
@@ -8,11 +9,12 @@ function dateKey(year, month, day) {
   return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
 }
 
-export default function CalendarWidget() {
+export default function CalendarWidget({ onDateClick }) {
   const today = useMemo(() => new Date(), [])
   const [viewDate, setViewDate] = useState(
     () => new Date(today.getFullYear(), today.getMonth(), 1)
   )
+  const [leaveDates, setLeaveDates] = useState([]);
 
   const year = viewDate.getFullYear()
   const month = viewDate.getMonth()
@@ -48,8 +50,19 @@ export default function CalendarWidget() {
 
   const hasEvent = (day) => {
     const key = dateKey(year, month, day)
-    return calendarEvents[key]?.length > 0
+      return leaveDates.some(date => date === key);
   }
+  const loadLeaveDates = async () => {
+      try {
+          const data = await getLeaveDates(year, month + 1);
+          setLeaveDates(data);
+      } catch (error) {
+          console.error(error);
+      }
+  };
+ useEffect(() => {
+      loadLeaveDates();
+  }, [year, month]);
 
   return (
     <div>
@@ -90,23 +103,32 @@ export default function CalendarWidget() {
           const event = cell.current && hasEvent(cell.day)
           return (
             <button
-              key={i}
-              type="button"
-              title={
-                todayCell
-                  ? 'Today'
-                  : event
-                    ? calendarEvents[dateKey(year, month, cell.day)]?.join(', ')
-                    : undefined
-              }
-              className={`relative mx-auto flex h-8 w-8 flex-col items-center justify-center rounded-full text-xs transition-colors ${
-                todayCell
-                  ? 'bg-medisync-teal font-semibold text-white'
-                  : cell.current
-                    ? 'text-medisync-text hover:bg-gray-100'
-                    : 'text-gray-300'
-              }`}
-            >
+                key={i}
+                type="button"
+                onClick={() => {
+                  if (!cell.current) return;
+
+                  const selectedDate = dateKey(year, month, cell.day);
+
+                  console.log("Clicked:", selectedDate);
+
+                  onDateClick(selectedDate);
+                }}
+                title={
+                    todayCell
+                        ? "Today"
+                        : event
+                            ? "Pharmacist Leave"
+                            : undefined
+                }
+                className={`relative mx-auto flex h-8 w-8 flex-col items-center justify-center rounded-full text-xs transition-colors ${
+                  todayCell
+                    ? "bg-medisync-teal font-semibold text-white"
+                    : cell.current
+                      ? "text-medisync-text hover:bg-gray-100 cursor-pointer"
+                      : "text-gray-300"
+                }`}
+              >
               {cell.day}
               {event && !todayCell && (
                 <span className="absolute bottom-0.5 h-1 w-1 rounded-full bg-medisync-teal" />

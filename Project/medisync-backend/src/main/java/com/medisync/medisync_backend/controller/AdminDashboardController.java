@@ -1,5 +1,6 @@
 package com.medisync.medisync_backend.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 import com.medisync.medisync_backend.service.PharmacistOnBoardService;
 import org.springframework.http.ResponseEntity;
@@ -12,21 +13,25 @@ import org.springframework.web.bind.annotation.RestController;
 import com.medisync.medisync_backend.dto.IncomeGrowthResponse;
 import com.medisync.medisync_backend.dto.PharmacistCardResponse;
 import com.medisync.medisync_backend.dto.PharmacistDetailsResponse;
+import com.medisync.medisync_backend.dto.PharmacistLeaveResponse;
 import com.medisync.medisync_backend.dto.ProfitLossResponsedto;
 import com.medisync.medisync_backend.service.AdminAnalyticsService;
+import com.medisync.medisync_backend.service.PharmacistLeaveService;
 
 @RestController
 @RequestMapping("/api/admin/dashboard")
 public class AdminDashboardController {
 
     private final PharmacistOnBoardService pharmacistOnBoardService;
-	
+	private final PharmacistLeaveService pharmacistLeaveService;
 	private final AdminAnalyticsService adminAnalytics;
 	
 	//Constructor Injection
-	public AdminDashboardController(AdminAnalyticsService adminAnalytics, PharmacistOnBoardService pharmacistOnBoardService) {
+	public AdminDashboardController(AdminAnalyticsService adminAnalytics, PharmacistOnBoardService pharmacistOnBoardService
+			,PharmacistLeaveService pharmacistLeaveService) {
 		this.adminAnalytics=adminAnalytics;
 		this.pharmacistOnBoardService = pharmacistOnBoardService;
+		this.pharmacistLeaveService=pharmacistLeaveService;
 	
 	}
 	
@@ -55,4 +60,23 @@ public class AdminDashboardController {
 	     return pharmacistOnBoardService.getAllPharmacists();
 
 	 }
+	 
+
+	@GetMapping("/calendar/leaves")
+	public ResponseEntity<List<PharmacistLeaveResponse>> getLeaves(
+	        @RequestParam LocalDate date) {
+	
+	    return ResponseEntity.ok(
+	            pharmacistLeaveService.getLeavesByDate(date)
+	    );
+	}
+	
+	@GetMapping("/calendar/leave-dates")
+	public ResponseEntity<List<LocalDate>> getLeaveDates(
+	        @RequestParam int year,
+	        @RequestParam int month){
+
+	    return ResponseEntity.ok(
+	            pharmacistLeaveService.getLeaveDates(year,month));
+	}
 }
