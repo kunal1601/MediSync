@@ -8,6 +8,7 @@ import com.medisync.medisync_backend.dto.PharmacistCardResponse;
 import com.medisync.medisync_backend.dto.PharmacistDetailsResponse;
 import com.medisync.medisync_backend.entity.Pharmacist;
 import com.medisync.medisync_backend.repository.PharmacistRepository;
+import com.medisync.medisync_backend.security.AesEncryptionUtil;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,7 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class PharmacistOnBoardService {
 	// Repository used to interact with Pharmacist table
 	 private final PharmacistRepository pharmacistRepository;
-	 
+	 private final AesEncryptionUtil aesEncryptionUtil;
 	 	/*
 	     * Fetch complete details of a pharmacist by ID.
 	     * Used when user clicks the "View" button on the dashboard.
@@ -27,13 +28,16 @@ public class PharmacistOnBoardService {
 	        Pharmacist pharmacist = pharmacistRepository.findById(pharmacistId)
 	                .orElseThrow(() ->
 	                        new RuntimeException("Pharmacist not found"));
+	        // Decrypt Aadhaar Number
+	        String decryptedAadhar =
+	                aesEncryptionUtil.decrypt(pharmacist.getAadharNumber());
 	     // Convert Entity into DTO and return it
 	        return PharmacistDetailsResponse.builder()
 	                .id(pharmacist.getId())
 	                .firstName(pharmacist.getFirstName())
 	                .lastName(pharmacist.getLastName())
 	                .dateOfBirth(pharmacist.getDateOfBirth())
-	                .aadharNumber(pharmacist.getAadharNumber())
+	                .aadharNumber(decryptedAadhar)
 	                .dateOfJoining(pharmacist.getDateOfJoining())
 	                .workingShift(pharmacist.getWorkingShift())
 	                .build();
