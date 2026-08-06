@@ -1,6 +1,7 @@
 package com.medisync.medisync_backend.controller;
 
 import java.util.List;
+import com.medisync.medisync_backend.dto.billing.InvoiceHistoryResponse;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +35,14 @@ public class BillingController {
 
         return ResponseEntity.ok(
                 billingService.createInvoice(request)
+        );
+    }
+    
+    @GetMapping("/invoices")
+    public ResponseEntity<List<InvoiceHistoryResponse>> getInvoiceHistory() {
+
+        return ResponseEntity.ok(
+                billingService.getInvoiceHistory()
         );
     }
 }

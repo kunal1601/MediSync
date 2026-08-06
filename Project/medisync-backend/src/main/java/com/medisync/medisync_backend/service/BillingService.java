@@ -1,6 +1,7 @@
 package com.medisync.medisync_backend.service;
 
 import java.math.BigDecimal;
+import com.medisync.medisync_backend.dto.billing.InvoiceHistoryResponse;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
@@ -12,6 +13,7 @@ import com.medisync.medisync_backend.dto.billing.BillingMedicineResponse;
 import com.medisync.medisync_backend.dto.billing.CreateInvoiceRequest;
 import com.medisync.medisync_backend.dto.billing.CreateInvoiceResponse;
 import com.medisync.medisync_backend.dto.billing.CustomerRequest;
+import com.medisync.medisync_backend.dto.billing.InvoiceHistoryResponse;
 import com.medisync.medisync_backend.dto.billing.InvoiceItemRequest;
 import com.medisync.medisync_backend.entity.Customer;
 import com.medisync.medisync_backend.entity.MedicineStock;
@@ -60,6 +62,18 @@ public class BillingService {
                 .availableStock(stock.getStockQuantity())
                 .build();
 	}
+	
+	private InvoiceHistoryResponse convertToInvoiceHistory(SalesInvoice invoice) {
+
+	    return InvoiceHistoryResponse.builder()
+	            .invoiceNumber(invoice.getInvoiceNumber())
+	            .customerName(invoice.getCustomer().getCustomerName())
+	            .createdAt(invoice.getCreatedAt())
+	            .paymentMode(invoice.getPaymentMode())
+	            .grandTotal(invoice.getNetPayable())
+	            .build();
+	}
+	
 	public CreateInvoiceResponse createInvoice(CreateInvoiceRequest request) {
 
 		if (request.getItems() == null || request.getItems().isEmpty()) {
@@ -161,5 +175,14 @@ public class BillingService {
 		return "INV-" + UUID.randomUUID().toString().substring(0,8).toUpperCase();
 	}
 	
+	
+	@Transactional(readOnly = true)
+	public List<InvoiceHistoryResponse> getInvoiceHistory() {
+
+	    return salesInvoiceRepository.findAllByOrderByCreatedAtDesc()
+	            .stream()
+	            .map(this::convertToInvoiceHistory)
+	            .toList();
+	}
 	
 }
