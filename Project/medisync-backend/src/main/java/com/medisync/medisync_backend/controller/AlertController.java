@@ -68,6 +68,12 @@ public class AlertController {
 
         return ResponseEntity.ok(alertService.getPendingRequests());
     }
+    
+    @GetMapping("/manual-requests")
+    public ResponseEntity<List<AlertResponseDto>> getManualRequests() {
+        return ResponseEntity.ok(alertService.getManualRequests());
+    }
+    
 
     /**
      * Admin approves a request

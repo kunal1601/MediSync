@@ -15,13 +15,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/pharmacists")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173") // 🌟 Standard Vite dev server port (or http://localhost:3000)
+@CrossOrigin(origins = "http://localhost:5173") //  Standard Vite dev server port (or http://localhost:3000)
 public class PharmacistController {
 
     private final PharmacistService pharmacistService;
 
-    /**
-     * 🌟 Register new Pharmacist (Hashes password with SHA-256 & encrypts sensitive fields)
+    /*
+     *  Register new Pharmacist (Hashes password with SHA-256 & encrypts sensitive fields)
      */
     @PostMapping("/register")
     public ResponseEntity<?> registerPharmacist(@RequestBody PharmacistRegistrationDTO dto) {

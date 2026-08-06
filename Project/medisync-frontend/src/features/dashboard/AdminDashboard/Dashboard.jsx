@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react'
 import { Users } from 'lucide-react'
 import {  useEffect } from "react";
+
 import {
   PieChart,
   Pie,
@@ -20,14 +21,15 @@ import SectionCard from './Widgets/SectionCard'
 import CalendarWidget from './Widgets/CalendarWidget'
 import {getIncomeGrowth} from './Services/IncomeGrowth'
 import {
-  pharmacistOnBoard,
-  profitLossData,
+  
+  
   profitMargin,
   stockDataByFilter,
   stockFilters,
   
 } from './data/dummyData'
 import { getProfitLoss } from './Services/ProfitLoss';
+import { getPharmacistOnBoard, getAllPharmacists } from './Services/PharmacistOnBoard';
 
 const formatCurrency = (n) =>
   new Intl.NumberFormat('en-IN', {
@@ -38,22 +40,23 @@ const formatCurrency = (n) =>
 
   
 function PharmacistCard({ item, onView }) {
+  
   return (
     <div className="flex flex-col justify-between rounded-xl border border-medisync-border bg-white p-4 shadow-sm">
       <div className="flex items-start justify-between">
-        <span className="text-xs text-medisync-muted">{item.records}</span>
+        <span className="text-xs text-medisync-muted">{item.employmentStatus}</span>
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-medisync-purple/20">
           <Users size={16} className="text-medisync-purple" />
         </div>
       </div>
       <div className="mt-6 flex items-end justify-between">
         <div>
-          <span className="text-sm font-semibold text-medisync-text">{item.label}</span>
-          <p className="text-[10px] text-medisync-muted">{item.count} active records</p>
+          <span className="text-sm font-semibold text-medisync-text">{item.firstName} {item.lastName}</span>
+          <p className="text-[10px] text-medisync-muted">{item.workingShift}</p>
         </div>
         <button
           type="button"
-          onClick={() => onView(item.details)}
+          onClick={() => onView(item.id)}
           className="rounded-full bg-medisync-teal px-4 py-1 text-xs font-medium text-white transition hover:bg-medisync-teal-dark"
         >
           View
@@ -375,7 +378,7 @@ function IncomeAreaChart({ data, period }) {
             tick={{ fontSize: 10, fill: '#888' }}
             axisLine={false}
             tickLine={false}
-            interval={period === 'Monthly' ? 4 : 0}
+            interval={period === 'monthly' ? 4 : 0}
           />
           <YAxis
             tick={{ fontSize: 10, fill: '#888' }}
@@ -399,9 +402,9 @@ function IncomeAreaChart({ data, period }) {
         </AreaChart>
       </ResponsiveContainer>
       <p className="mt-1 text-right text-[10px] text-medisync-muted">
-        {period === 'Weekly' && 'Last 7 days'}
-        {period === 'Monthly' && 'Last 30 days'}
-        {period === 'Yearly' && 'Year-over-year (2018–2026)'}
+        {period === 'weekly' && 'Last 7 days'}
+        {period === 'monthly' && 'Last 30 days'}
+        {period === 'yearly' && 'Year-over-year (2018–2026)'}
       </p>
     </div>
   )
@@ -412,7 +415,20 @@ export default function Dashboard() {
   const [incomePeriod, setIncomePeriod] = useState('weekly')
   const [selectedPharmacist, setSelectedPharmacist] = useState(null)
   const [incomeData, setIncomeData] = useState([]);
-  
+  const [pharmacistOnBoard, setPharmacistOnBoard] = useState([]);
+   useEffect(() => {
+        loadPharmacists();
+    }, []);
+
+    const loadPharmacists = async () => {
+        try {
+            const data = await getAllPharmacists();
+            console.log(data);
+            setPharmacistOnBoard(data);
+        } catch (error) {
+            console.log(error);
+        }
+    };
 
   useEffect(() => {
     fetchIncomeGrowth();
@@ -428,13 +444,31 @@ export default function Dashboard() {
   };
   const stockData = stockDataByFilter[activeStockFilter]
   // const incomeData = incomeGrowthByPeriod[incomePeriod]
+    const handleViewPharmacist = async (id) => {
 
+      try {
+
+        const data = await getPharmacistOnBoard(id);
+
+        setSelectedPharmacist(data);
+
+      } catch (error) {
+
+        console.error("Failed to fetch pharmacist details", error);
+
+      }
+
+    };
   return (
     <div className="space-y-5">
       <SectionCard title="Pharmacist On-Board">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {pharmacistOnBoard.map((item) => (
-            <PharmacistCard key={item.id} item={item} onView={setSelectedPharmacist} />
+           <PharmacistCard
+                key={item.id}
+                item={item}
+                onView={handleViewPharmacist}
+            />
           ))}
         </div>
       </SectionCard>
@@ -452,19 +486,19 @@ export default function Dashboard() {
             </div>
             <div className="rounded-2xl border border-medisync-border bg-slate-50 p-4">
               <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">Date of Birth</p>
-              <p className="mt-2 text-sm font-semibold text-medisync-text">{selectedPharmacist.dob}</p>
+              <p className="mt-2 text-sm font-semibold text-medisync-text">{selectedPharmacist.dateOfBirth}</p>
             </div>
             <div className="rounded-2xl border border-medisync-border bg-slate-50 p-4">
               <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">Aadhar No</p>
-              <p className="mt-2 text-sm font-semibold text-medisync-text">{selectedPharmacist.aadhar}</p>
+              <p className="mt-2 text-sm font-semibold text-medisync-text">{selectedPharmacist.aadharNumber}</p>
             </div>
             <div className="rounded-2xl border border-medisync-border bg-slate-50 p-4">
               <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">Date of Joining</p>
-              <p className="mt-2 text-sm font-semibold text-medisync-text">{selectedPharmacist.joined}</p>
+              <p className="mt-2 text-sm font-semibold text-medisync-text">{selectedPharmacist.dateOfJoining}</p>
             </div>
             <div className="rounded-2xl border border-medisync-border bg-slate-50 p-4">
               <p className="text-[11px] uppercase tracking-[.2em] text-medisync-muted">Working Shift</p>
-              <p className="mt-2 text-sm font-semibold text-medisync-text">{selectedPharmacist.shift}</p>
+              <p className="mt-2 text-sm font-semibold text-medisync-text">{selectedPharmacist.workingShift}</p>
             </div>
           </div>
         </SectionCard>
