@@ -134,6 +134,12 @@ const StockDetailsPage = () => {
 
         <div className="flex items-center gap-3">
           <button
+            onClick={() => navigate("/dashboard/pharmacist/inventory-loss/add")}
+            className="px-5 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-secondary transition"
+          >
+            + Add Loss
+          </button>
+          <button
             onClick={() => navigate("/dashboard/pharmacist/stock-details/add")}
             className="px-5 py-2 bg-brand-primary text-white rounded-lg hover:bg-brand-secondary transition"
           >

@@ -22,6 +22,7 @@ import Billings from "./features/dashboard/AdminDashboard/pages/Billings";
 import Inventory from "./features/dashboard/AdminDashboard/pages/Inventory";
 import Settings from "./features/dashboard/AdminDashboard/pages/Settings";
 import ManageAdmins from "./features/dashboard/AdminDashboard/pages/ManageAdmins";
+import AddInventoryLossPage from "./features/stock/components/AddInventoryLossPage";
 
 function App() {
   return (
@@ -60,6 +61,7 @@ function App() {
           <Route path="stock-details" element={<StockDetailsPage />} />
           <Route path="stock-details" element={<StockDetailsPage />} />
           <Route path="stock-details/add" element={<AddMedicinePage />} />
+          <Route path="inventory-loss/add" element={<AddInventoryLossPage />}/>
           <Route path="history" element={<BillHistoryPage />} />
           <Route path="alerts" element={<PharmacistAlertsPage />} />
         </Route>

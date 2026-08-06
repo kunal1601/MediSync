@@ -1,6 +1,7 @@
 package com.medisync.medisync_backend.controller;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -12,9 +13,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.medisync.medisync_backend.dto.AddStockRequest;
+import com.medisync.medisync_backend.dto.InventoryLossRequest;
+import com.medisync.medisync_backend.dto.InventoryLossResponse;
 import com.medisync.medisync_backend.dto.MedicineStockResponse;
 import com.medisync.medisync_backend.dto.common.PageResponse;
 import com.medisync.medisync_backend.entity.MedicineStock;
+import com.medisync.medisync_backend.service.InventoryLossServiceImpl;
 import com.medisync.medisync_backend.service.MedicineStockService;
 
 import jakarta.validation.Valid;
@@ -27,7 +31,8 @@ import lombok.RequiredArgsConstructor;
 public class MedicineStockController {
 
     private final MedicineStockService medicineStockService;
-
+   
+    private final InventoryLossServiceImpl inventoryLossService;
     /**
      * Add Stock
      */
@@ -72,5 +77,25 @@ public class MedicineStockController {
                 medicineStockService.getStockAnalyticsData()
         );
     }
+    
+ 
+
+    @PostMapping("/invLoss")
+    public ResponseEntity<InventoryLossResponse> reportLoss(
+            @RequestBody InventoryLossRequest request){
+    	 System.out.println("Inside reportLoss Controller");
+        return ResponseEntity.ok(
+                inventoryLossService.reportLoss(request)
+        );
+    }
+
+    @GetMapping("/getInventory-loss")
+    public ResponseEntity<List<InventoryLossResponse>> getAllLosses(){
+
+        return ResponseEntity.ok(
+                inventoryLossService.getAllLosses()
+        );
+    }
+   
 
 }
