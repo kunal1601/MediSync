@@ -1,27 +1,22 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react"; // Run: npm install qrcode.react
+import {
+  getMedicinesForBilling,
+  createInvoice,
+} from "../services/BillingService";
+import { toast } from "react-toastify";
 
 const BillingPage = () => {
-  const medicines = [
-    {
-      id: 1,
-      name: "Dolo 650",
-      company: "Micro Labs",
-      category: "Tablet",
-      stock: 120,
-      stripSize: 15,
-      price: 35,
-    },
-    {
-      id: 2,
-      name: "Crocin 500",
-      company: "GSK",
-      category: "Tablet",
-      stock: 80,
-      stripSize: 10,
-      price: 25,
-    },
-  ];
+  const searchInputRef = useRef(null);
+  const [medicines, setMedicines] = useState([]);
+  const loadMedicines = async () => {
+    try {
+      const data = await getMedicinesForBilling();
+      setMedicines(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const [customerName, setCustomerName] = useState("");
   const [contactNumber, setContactNumber] = useState("");
@@ -34,6 +29,13 @@ const BillingPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [discount, setDiscount] = useState(0);
 
+  useEffect(() => {
+    if (showModal) {
+      loadMedicines();
+      searchInputRef.current?.focus();
+    }
+  }, [showModal]);
+
   // Added functionality states
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentMode, setPaymentMode] = useState("");
@@ -41,20 +43,21 @@ const BillingPage = () => {
   const handleAddToBill = () => {
     if (!selectedMedicine || !quantity) return;
 
-    if (Number(quantity) > selectedMedicine.stock) {
-      alert("Quantity exceeds available stock");
+    if (Number(quantity) > selectedMedicine.availableStock) {
+      toast.error("Quantity exceeds available stock!");
       return;
     }
 
     const item = {
       id: Date.now(),
-      medicine: selectedMedicine.name,
-      company: selectedMedicine.company,
+      stockId: selectedMedicine.stockId,
+      medicine: selectedMedicine.medicineName,
+      company: selectedMedicine.manufacturer,
       category: selectedMedicine.category,
       quantity: Number(quantity),
-      stock: selectedMedicine.stock,
-      price: selectedMedicine.price,
-      total: Number(quantity) * selectedMedicine.price,
+      stock: selectedMedicine.availableStock,
+      price: selectedMedicine.sellingPrice,
+      total: Number(quantity) * selectedMedicine.sellingPrice,
     };
 
     setBillItems([...billItems, item]);
@@ -75,7 +78,7 @@ const BillingPage = () => {
   // Open the payment gate popup instead of firing immediate download
   const handleOpenPaymentGateway = () => {
     if (billItems.length === 0) {
-      alert("Add medicines before generating bill");
+      toast.warning("Please add at least one medicine.");
       return;
     }
     setPaymentMode("");
@@ -83,38 +86,47 @@ const BillingPage = () => {
   };
 
   // Process the final payload save operation
-  const handleFinalCheckout = () => {
+  const handleFinalCheckout = async () => {
     if (!paymentMode) {
-      alert("Please select a method of payment.");
+      toast.warning("Please select a payment method.");
       return;
     }
 
-    const bill = {
-      invoiceNo: `INV-${Date.now()}`,
-      date: new Date().toLocaleString(),
-
+    const payload = {
       customer: {
-        name: customerName,
-        contact: contactNumber,
-        age,
+        customerName,
+        contactNumber,
+        age: Number(age),
         gender,
       },
-
-      items: billItems,
-
-      subtotal,
-      discount,
-      gstAmount,
-      grandTotal,
-      paymentMode, // Bundled into structural dataset
+      paymentMode,
+      discountPercentage: Number(discount),
+      items: billItems.map((item) => ({
+        stockId: item.stockId,
+        quantity: item.quantity,
+      })),
     };
 
-    const existingBills = JSON.parse(localStorage.getItem("billHistory")) || [];
-    existingBills.push(bill);
-    localStorage.setItem("billHistory", JSON.stringify(existingBills));
+    try {
+      const response = await createInvoice(payload);
 
-    alert("Bill saved to history successfully");
-    
+      toast.success("Bill generated successfully.");
+
+      console.log("Invoice Created:", response);
+
+      setShowPaymentModal(false);
+      setBillItems([]);
+      setCustomerName("");
+      setContactNumber("");
+      setAge("");
+      setGender("");
+      setDiscount(0);
+    } catch (error) {
+      console.error(error);
+
+      toast.error(error.response?.data?.message || "Failed to generate bill.");
+    }
+
     // Reset core states after saving
     setShowPaymentModal(false);
     setBillItems([]);
@@ -127,6 +139,15 @@ const BillingPage = () => {
 
   const upiString = `upi://pay?pa=medisyncpharmacy@okaxis&pn=MediSync_Healthcare&am=${grandTotal.toFixed(2)}&cu=INR&tn=Pharmacy_Bill`;
 
+  const getStockColor = (stock) => {
+    if (stock <= 5) return "text-red-600";
+    if (stock <= 20) return "text-yellow-600";
+    return "text-green-600";
+  };
+
+  const filteredMedicines = medicines.filter((medicine) =>
+    medicine.medicineName.toLowerCase().includes(searchTerm.toLowerCase()),
+  );
   return (
     <div className="space-y-6 animate-fadeIn text-left">
       {/* Page Header */}
@@ -140,47 +161,47 @@ const BillingPage = () => {
       </div>
 
       {/* Customer Information */}
-<div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-  <div className="px-6 py-4 border-b border-slate-100">
-    <h3 className="text-lg font-bold text-slate-800">
-      Customer Information
-    </h3>
-  </div>
+      <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100">
+          <h3 className="text-lg font-bold text-slate-800">
+            Customer Information
+          </h3>
+        </div>
 
-  <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-    <input
-      value={customerName}
-      onChange={(e) => setCustomerName(e.target.value)}
-      placeholder="Customer Name"
-      className="border border-slate-200 rounded-lg px-4 py-3 w-full"
-    />
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          <input
+            value={customerName}
+            onChange={(e) => setCustomerName(e.target.value)}
+            placeholder="Customer Name"
+            className="border border-slate-200 rounded-lg px-4 py-3 w-full"
+          />
 
-    <input
-      value={contactNumber}
-      onChange={(e) => setContactNumber(e.target.value)}
-      placeholder="Contact Number"
-      className="border border-slate-200 rounded-lg px-4 py-3 w-full"
-    />
+          <input
+            value={contactNumber}
+            onChange={(e) => setContactNumber(e.target.value)}
+            placeholder="Contact Number"
+            className="border border-slate-200 rounded-lg px-4 py-3 w-full"
+          />
 
-    <input
-      value={age}
-      onChange={(e) => setAge(e.target.value)}
-      placeholder="Age"
-      className="border border-slate-200 rounded-lg px-4 py-3 w-full"
-    />
+          <input
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            placeholder="Age"
+            className="border border-slate-200 rounded-lg px-4 py-3 w-full"
+          />
 
-    <select 
-      value={gender} 
-      onChange={(e) => setGender(e.target.value)}
-      className="border border-slate-200 rounded-lg px-4 py-3 w-full bg-white"
-    >
-      <option value="">Select Gender</option>
-      <option value="Male">Male</option>
-      <option value="Female">Female</option>
-      <option value="Other">Other</option>
-    </select> 
-  </div>
-</div>
+          <select
+            value={gender}
+            onChange={(e) => setGender(e.target.value)}
+            className="border border-slate-200 rounded-lg px-4 py-3 w-full bg-white"
+          >
+            <option value="">Select Gender</option>
+            <option value="MALE">Male</option>
+            <option value="FEMALE">Female</option>
+            <option value="OTHER">Other</option>
+          </select>
+        </div>
+      </div>
 
       {/* Add Medicine */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
@@ -200,7 +221,7 @@ const BillingPage = () => {
                   onClick={() => setShowModal(true)}
                   className="w-full border border-slate-200 rounded-lg px-4 py-3 text-left cursor-pointer bg-white"
                 >
-                  {selectedMedicine?.name || "Select Medicine"}
+                  {selectedMedicine?.medicineName || "Select Medicine"}
                 </div>
               </div>
 
@@ -210,7 +231,7 @@ const BillingPage = () => {
                 </label>
 
                 <input
-                  value={selectedMedicine?.company || "Select Company"}
+                  value={selectedMedicine?.manufacturer || "Select Company"}
                   readOnly
                   className="w-full border border-slate-200 rounded-lg px-4 py-3 bg-slate-50"
                 />
@@ -248,7 +269,7 @@ const BillingPage = () => {
                 </label>
 
                 <input
-                  value={selectedMedicine?.price || "0.00"}
+                  value={selectedMedicine?.sellingPrice || "0.00"}
                   readOnly
                   className="w-full border border-slate-200 rounded-lg px-4 py-3 bg-slate-50"
                 />
@@ -310,11 +331,16 @@ const BillingPage = () => {
                                   bill.id === item.id
                                     ? {
                                         ...bill,
-                                        quantity: Math.max(1, bill.quantity - 1),
-                                        total: Math.max(1, bill.quantity - 1) * bill.price,
+                                        quantity: Math.max(
+                                          1,
+                                          bill.quantity - 1,
+                                        ),
+                                        total:
+                                          Math.max(1, bill.quantity - 1) *
+                                          bill.price,
                                       }
-                                    : bill
-                                )
+                                    : bill,
+                                ),
                               );
                             }}
                             className="w-10 h-10 flex items-center justify-center text-lg font-semibold hover:bg-slate-50"
@@ -331,13 +357,23 @@ const BillingPage = () => {
                               setBillItems(
                                 billItems.map((bill) =>
                                   bill.id === item.id
-                                    ? {
-                                        ...bill,
-                                        quantity: bill.quantity + 1,
-                                        total: (bill.quantity + 1) * bill.price,
-                                      }
-                                    : bill
-                                )
+                                    ? (() => {
+                                        if (bill.quantity >= bill.stock) {
+                                          toast.error(
+                                            "No more stock available.",
+                                          );
+                                          return bill;
+                                        }
+
+                                        return {
+                                          ...bill,
+                                          quantity: bill.quantity + 1,
+                                          total:
+                                            (bill.quantity + 1) * bill.price,
+                                        };
+                                      })()
+                                    : bill,
+                                ),
                               );
                             }}
                             className="w-10 h-10 flex items-center justify-center text-lg font-semibold hover:bg-slate-50"
@@ -423,12 +459,21 @@ const BillingPage = () => {
           <div className="bg-white w-full max-w-md rounded-2xl shadow-xl p-6">
             <div className="flex justify-between items-center mb-4 border-b pb-2">
               <h3 className="text-lg font-bold">Select Payment Mode</h3>
-              <button onClick={() => setShowPaymentModal(false)} className="text-slate-400 font-bold">✕</button>
+              <button
+                onClick={() => setShowPaymentModal(false)}
+                className="text-slate-400 font-bold"
+              >
+                ✕
+              </button>
             </div>
 
             <div className="bg-slate-50 rounded-xl p-4 text-center mb-4 border">
-              <span className="text-xs font-semibold text-slate-500 uppercase">Amount Payable</span>
-              <h2 className="text-2xl font-bold text-slate-800 mt-1">₹{grandTotal.toFixed(2)}</h2>
+              <span className="text-xs font-semibold text-slate-500 uppercase">
+                Amount Payable
+              </span>
+              <h2 className="text-2xl font-bold text-slate-800 mt-1">
+                ₹{grandTotal.toFixed(2)}
+              </h2>
             </div>
 
             <div className="grid grid-cols-2 gap-3 mb-4">
@@ -460,9 +505,15 @@ const BillingPage = () => {
             {/* If choice matches Online -> Render the SVG code string */}
             {paymentMode === "ONLINE" && (
               <div className="bg-slate-50 border rounded-xl p-4 flex flex-col items-center justify-center gap-2 mb-4">
-                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Scan UPI QR Code</p>
+                <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide">
+                  Scan UPI QR Code
+                </p>
                 <div className="bg-white p-2 rounded-lg border">
-                  <QRCodeSVG value={upiString} size={160} includeMargin={true} />
+                  <QRCodeSVG
+                    value={upiString}
+                    size={160}
+                    includeMargin={true}
+                  />
                 </div>
               </div>
             )}
@@ -487,11 +538,27 @@ const BillingPage = () => {
 
       {/* Search Medicine Modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-4xl rounded-2xl shadow-xl p-6">
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+          onClick={() => {
+            setSearchTerm("");
+            setShowModal(false);
+          }}
+        >
+          <div
+            className="bg-white w-full max-w-4xl max-h-[80vh] rounded-2xl shadow-xl p-6 flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-lg font-bold">Search Medicine</h3>
-              <button onClick={() => setShowModal(false)}>✕</button>
+              <button
+                onClick={() => {
+                  setSearchTerm("");
+                  setShowModal(false);
+                }}
+              >
+                ✕
+              </button>
             </div>
 
             <input
@@ -502,31 +569,55 @@ const BillingPage = () => {
               className="w-full border border-slate-200 rounded-lg px-4 py-3 mb-4"
             />
 
-            {medicines
-              .filter((medicine) =>
-                medicine.name.toLowerCase().includes(searchTerm.toLowerCase())
-              )
-              .map((medicine) => (
-                <div
-                  key={medicine.id}
-                  className="flex justify-between items-center border-b py-3"
-                >
-                  <div>
-                    <p className="font-semibold">{medicine.name}</p>
-                    <p className="text-sm text-slate-500">{medicine.company}</p>
-                  </div>
-
-                  <button
-                    onClick={() => {
-                      setSelectedMedicine(medicine);
-                      setShowModal(false);
-                    }}
-                    className="px-3 py-2 bg-brand-secondary text-white rounded-md"
-                  >
-                    Select
-                  </button>
+            <div className="overflow-y-auto flex-1 max-h-[60vh] pr-2">
+              {filteredMedicines.length === 0 ? (
+                <div className="flex items-center justify-center h-40 text-slate-400 font-medium">
+                  No medicine found
                 </div>
-              ))}
+              ) : (
+                filteredMedicines.map((medicine) => (
+                  <div
+                    key={medicine.stockId}
+                    className="flex justify-between items-center border-b py-3 px-2 rounded-lg hover:bg-slate-50 transition"
+                  >
+                    <div className="flex-1">
+                      <p className="font-semibold text-slate-800 text-lg">
+                        {medicine.medicineName}
+                      </p>
+
+                      <p className="text-sm text-slate-500">
+                        {medicine.manufacturer} • {medicine.category}
+                      </p>
+
+                      <div className="mt-2 flex items-center gap-6 text-sm">
+                        <span
+                          className={`font-semibold ${getStockColor(
+                            medicine.availableStock,
+                          )}`}
+                        >
+                          📦 Stock : {medicine.availableStock} strips
+                        </span>
+
+                        <span className="font-semibold text-slate-700">
+                          ₹{Number(medicine.sellingPrice).toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        setSelectedMedicine(medicine);
+                        setSearchTerm("");
+                        setShowModal(false);
+                      }}
+                      className="px-3 py-2 bg-brand-secondary text-white rounded-md"
+                    >
+                      Select
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
       )}

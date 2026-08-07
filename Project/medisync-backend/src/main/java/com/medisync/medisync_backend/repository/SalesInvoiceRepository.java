@@ -11,6 +11,9 @@ import java.util.Optional;
 
 @Repository
 public interface SalesInvoiceRepository extends JpaRepository<SalesInvoice, Integer> {
+	
+	
+	List<SalesInvoice> findAllByOrderByCreatedAtDesc();
 
     // Find a specific transaction record by its generated bill number
     Optional<SalesInvoice> findByInvoiceNumber(String invoiceNumber);
