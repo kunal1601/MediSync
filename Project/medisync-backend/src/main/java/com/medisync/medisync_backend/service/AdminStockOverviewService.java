@@ -1,0 +1,11 @@
+package com.medisync.medisync_backend.service;
+
+import java.util.List;
+
+import com.medisync.medisync_backend.dto.AdminStockOverviewResponse;
+
+public interface AdminStockOverviewService {
+
+    List<AdminStockOverviewResponse> getStockOverview(String filter);
+
+}
