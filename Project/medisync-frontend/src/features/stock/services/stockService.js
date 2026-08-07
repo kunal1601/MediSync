@@ -15,3 +15,12 @@ export const getAllStocks = async (page = 0, size = 20) => {
 
     return response.data;
 };
+export const addInventoryLoss = async (loss) => {
+    console.log(localStorage.getItem("token"));
+    const response = await API.post(
+        "/stocks/invLoss",
+        loss
+    );
+
+    return response.data;
+};
