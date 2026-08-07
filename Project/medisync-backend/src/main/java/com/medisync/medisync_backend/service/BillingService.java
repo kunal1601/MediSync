@@ -1,7 +1,6 @@
 package com.medisync.medisync_backend.service;
 
 import java.math.BigDecimal;
-import com.medisync.medisync_backend.dto.billing.InvoiceHistoryResponse;
 import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
@@ -13,8 +12,10 @@ import com.medisync.medisync_backend.dto.billing.BillingMedicineResponse;
 import com.medisync.medisync_backend.dto.billing.CreateInvoiceRequest;
 import com.medisync.medisync_backend.dto.billing.CreateInvoiceResponse;
 import com.medisync.medisync_backend.dto.billing.CustomerRequest;
+import com.medisync.medisync_backend.dto.billing.InvoiceDetailsResponse;
 import com.medisync.medisync_backend.dto.billing.InvoiceHistoryResponse;
 import com.medisync.medisync_backend.dto.billing.InvoiceItemRequest;
+import com.medisync.medisync_backend.dto.billing.InvoiceItemResponse;
 import com.medisync.medisync_backend.entity.Customer;
 import com.medisync.medisync_backend.entity.MedicineStock;
 import com.medisync.medisync_backend.entity.SalesInvoice;
@@ -183,6 +184,46 @@ public class BillingService {
 	            .stream()
 	            .map(this::convertToInvoiceHistory)
 	            .toList();
+	}
+	
+	public InvoiceDetailsResponse getInvoiceDetails(String invoiceNumber) {
+
+	    SalesInvoice invoice = salesInvoiceRepository
+	            .findByInvoiceNumber(invoiceNumber)
+	            .orElseThrow(() ->
+	                    new RuntimeException("Invoice not found"));
+
+	    List<SalesInvoiceItem> invoiceItems =
+	            salesInvoiceItemRepository.findBySalesInvoice(invoice);
+
+	    List<InvoiceItemResponse> items = invoiceItems.stream()
+	            .map(item -> InvoiceItemResponse.builder()
+	                    .medicineName(item.getMedicine().getName())
+	                    .manufacturer(item.getMedicine().getManufacturer())
+	                    .quantity(item.getQuantity())
+	                    .price(item.getPrice())
+	                    .lineTotal(item.getLineTotal())
+	                    .build())
+	            .toList();
+
+	    CustomerRequest customer = CustomerRequest.builder()
+	            .customerName(invoice.getCustomer().getCustomerName())
+	            .contactNumber(invoice.getCustomer().getContactNumber())
+	            .age(invoice.getCustomer().getAge())
+	            .gender(invoice.getCustomer().getGender())
+	            .build();
+
+	    return InvoiceDetailsResponse.builder()
+	            .invoiceNumber(invoice.getInvoiceNumber())
+	            .createdAt(invoice.getCreatedAt())
+	            .paymentMode(invoice.getPaymentMode())
+	            .grossTotal(invoice.getGrossTotal())
+	            .discountPercentage(invoice.getDiscountPercentage())
+	            .taxAmount(invoice.getTaxAmount())
+	            .grandTotal(invoice.getNetPayable())
+	            .customer(customer)
+	            .items(items)
+	            .build();
 	}
 	
 }

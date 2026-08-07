@@ -1,10 +1,10 @@
 package com.medisync.medisync_backend.controller;
 
 import java.util.List;
-import com.medisync.medisync_backend.dto.billing.InvoiceHistoryResponse;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.medisync.medisync_backend.dto.billing.BillingMedicineResponse;
 import com.medisync.medisync_backend.dto.billing.CreateInvoiceRequest;
 import com.medisync.medisync_backend.dto.billing.CreateInvoiceResponse;
+import com.medisync.medisync_backend.dto.billing.InvoiceDetailsResponse;
+import com.medisync.medisync_backend.dto.billing.InvoiceHistoryResponse;
 import com.medisync.medisync_backend.service.BillingService;
 
 import lombok.RequiredArgsConstructor;
@@ -28,10 +30,19 @@ public class BillingController {
     public ResponseEntity<List<BillingMedicineResponse>> getMedicines() {
         return ResponseEntity.ok(billingService.getMedicinesForBilling());
     }
+    
+    @GetMapping("/invoice/{invoiceNumber}")
+    public ResponseEntity<InvoiceDetailsResponse> getInvoiceDetails(
+            @PathVariable String invoiceNumber) {
+//    	System.out.println("GET INVOICE DETAILS HIT");
+        return ResponseEntity.ok(
+                billingService.getInvoiceDetails(invoiceNumber));
+    }
 
     @PostMapping("/invoice")
     public ResponseEntity<CreateInvoiceResponse> createInvoice(
             @RequestBody CreateInvoiceRequest request) {
+//        System.out.println("===== BILLING CONTROLLER HIT =====");
 
         return ResponseEntity.ok(
                 billingService.createInvoice(request)
