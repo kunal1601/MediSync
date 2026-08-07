@@ -30,9 +30,7 @@ public class InventoryLossServiceImpl {
     private final MedicineStockRepository medicineStockRepository;
     private final PharmacistRepository pharmacistRepository;
 
-    /**
-     * Report Inventory Loss
-     */
+    //Inventory Loss Repo
     public InventoryLossResponse reportLoss(InventoryLossRequest request) {
 
         // Fetch selected stock
@@ -100,9 +98,7 @@ public class InventoryLossServiceImpl {
                 .build();
     }
 
-    /**
-     * Get all inventory losses
-     */
+    //Get all Inventory Loss
     @Transactional(readOnly = true)
     public List<InventoryLossResponse> getAllLosses() {
 

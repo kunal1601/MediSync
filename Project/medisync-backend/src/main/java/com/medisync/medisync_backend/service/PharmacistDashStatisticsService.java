@@ -59,9 +59,9 @@ public class PharmacistDashStatisticsService {
 
         String username = authentication.getName();
 
-System.out.println(authentication);
-System.out.println(authentication.getAuthorities());
-System.out.println(authentication.getName());
+		System.out.println(authentication);
+		System.out.println(authentication.getAuthorities());
+		System.out.println(authentication.getName());
         Pharmacist pharmacist =
                 pharmacistRepository.findByUsernameOrEmail(username, username)
                         .orElseThrow(() ->

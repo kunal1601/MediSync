@@ -22,15 +22,13 @@ import CalendarWidget from './Widgets/CalendarWidget'
 import {getIncomeGrowth} from './Services/IncomeGrowth'
 import {
   
-  
-  profitMargin,
   stockDataByFilter,
-  stockFilters,
-  
+  profitMargin
 } from './data/dummyData'
 import { getProfitLoss } from './Services/ProfitLoss';
 import { getPharmacistOnBoard, getAllPharmacists } from './Services/PharmacistOnBoard';
 import {getLeavesByDate} from './Services/PharmacistLeave';
+import { getStockOverview } from './Services/StockOverviewGraph';
 const formatCurrency = (n) =>
   new Intl.NumberFormat('en-IN', {
     style: 'currency',
@@ -243,29 +241,65 @@ function ProfitLossChart() {
   }
 
 function StockTooltip({ active, payload, label }) {
-  if (!active || !payload?.length) return null
-  const sales = payload.find((p) => p.dataKey === 'sales')
-  const target = payload.find((p) => p.dataKey === 'target')
-  const pct = target?.value
-    ? Math.round((sales?.value / target.value) * 100)
-    : 0
+  if (!active || !payload || !payload.length) return null;
+
+  const sales = payload.find((p) => p.dataKey === "sales")?.value ?? 0;
+  const target = payload.find((p) => p.dataKey === "target")?.value ?? 0;
+
+  const achievement =
+    payload.find((p) => p.payload)?.payload?.achievement ?? 0;
+
   return (
-    <div className="rounded-lg border border-medisync-border bg-white px-3 py-2 text-xs shadow-md">
-      <p className="font-semibold text-medisync-text">{label}</p>
-      <p>Sales: <strong>{sales?.value?.toLocaleString()}</strong></p>
-      <p>Target: <strong>{target?.value?.toLocaleString()}</strong></p>
-      <p className="text-medisync-teal">{pct}% of target achieved</p>
+    <div className="rounded-lg border bg-white p-3 shadow">
+      <p className="font-semibold">{label}</p>
+
+      <p>
+        Sales: <strong>₹{sales.toLocaleString()}</strong>
+      </p>
+
+      <p>
+        Target: <strong>₹{target.toLocaleString()}</strong>
+      </p>
+
+      <p className="text-teal-600">
+        {achievement.toFixed(2)}% of target achieved
+      </p>
     </div>
-  )
+  );
 }
 
 function StockBarChart({ data, activeFilter }) {
-  const maxVal = Math.max(...data.flatMap((d) => [d.sales, d.target]))
+  if (!data.length) {
+    return (
+        <div className="h-72 flex items-center justify-center">
+            Loading...
+        </div>
+    );
+}
+  const maxVal =
+  data.length > 0
+    ? Math.max(...data.flatMap(d => [d.sales, d.target]))
+    : 0;
   const yTicks = useMemo(() => {
-    const step = maxVal > 5000 ? 2000 : maxVal > 2000 ? 1000 : 500
-    const top = Math.ceil(maxVal / step) * step
-    return [0, step, step * 2, top]
-  }, [maxVal])
+
+      const step =
+          maxVal <= 5000
+              ? 1000
+              : maxVal <= 10000
+              ? 2000
+              : 5000;
+
+      const top = Math.ceil(maxVal / step) * step;
+
+      const ticks = [];
+
+      for (let i = 0; i <= top; i += step) {
+          ticks.push(i);
+      }
+
+      return ticks;
+
+  }, [maxVal]);
 
   return (
     <div className="h-72 w-full">
@@ -285,7 +319,7 @@ function StockBarChart({ data, activeFilter }) {
           </defs>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#eee" />
           <XAxis
-            dataKey="category"
+            dataKey="label"
             tick={{ fontSize: 10, fill: '#888' }}
             axisLine={false}
             tickLine={false}
@@ -308,7 +342,7 @@ function StockBarChart({ data, activeFilter }) {
             ticks={yTicks}
             tickFormatter={(v) => v.toLocaleString()}
             label={{
-              value: 'Sales →',
+              value: "Revenue (₹)",
               angle: -90,
               position: 'insideLeft',
               fontSize: 10,
@@ -340,7 +374,7 @@ function StockBarChart({ data, activeFilter }) {
         </BarChart>
       </ResponsiveContainer>
       <p className="mt-1 text-center text-[10px] text-medisync-muted">
-        Showing: {activeFilter}
+          Showing Revenue by <strong>{activeFilter}</strong>
       </p>
     </div>
   )
@@ -409,9 +443,26 @@ function IncomeAreaChart({ data, period }) {
     </div>
   )
 }
-
+const stockFilters = [
+    {
+        label: "By Drug Type",
+        value: "drug"
+    },
+    {
+        label: "By Company",
+        value: "company"
+    },
+    {
+        label: "By Year",
+        value: "year"
+    },
+    {
+        label: "By Most Sold",
+        value: "mostsold"
+    }
+];
 export default function Dashboard() {
-  const [activeStockFilter, setActiveStockFilter] = useState('By Most Sold')
+  const [activeStockFilter, setActiveStockFilter] = useState('mostsold')
   const [incomePeriod, setIncomePeriod] = useState('weekly')
   const [selectedPharmacist, setSelectedPharmacist] = useState(null)
   const [incomeData, setIncomeData] = useState([]);
@@ -419,6 +470,8 @@ export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState(null);
   const [leaveData, setLeaveData] = useState([]);
   const leaveCardRef = useRef(null);     {/* for cal card close  */}
+  const [stock, setStock] = useState([]);
+  
    useEffect(() => {
           loadPharmacists();
         }, []);
@@ -462,24 +515,52 @@ export default function Dashboard() {
 
   useEffect(() => {
     fetchIncomeGrowth();
+    
   }, [incomePeriod]);
 
   const fetchIncomeGrowth = async () => {
     try {
+       console.log("Income Period:", incomePeriod);
+
       const data = await getIncomeGrowth(incomePeriod);
+     
+       console.log("Income Response:", data);
       setIncomeData(data);
     } catch (error) {
       console.error("Error fetching income growth:", error);
     }
   };
-  const stockData = stockDataByFilter[activeStockFilter]
-  // const incomeData = incomeGrowthByPeriod[incomePeriod]
+  
+  //  incomeData = incomeGrowthByPeriod[incomePeriod]
     const handleViewPharmacist = async (id) => {
       try {
         const data = await getPharmacistOnBoard(id);
         setSelectedPharmacist(data);
       } catch (error) {
         console.error("Failed to fetch pharmacist details", error);
+      }
+    };
+  //Stock Overview Graph
+  useEffect(() => {
+    console.log(activeStockFilter)
+      fetchStockOverview(activeStockFilter);
+    }, [activeStockFilter]);
+
+  const fetchStockOverview = async (filter) => {
+      try {
+        const response = await getStockOverview(filter);
+
+        const formatted = response.map((item) => ({
+          label: item.label,
+          sales: item.sales,
+          target: item.target,
+          achievement: item.achievement,
+        }));
+
+        setStock(formatted);
+
+      } catch (error) {
+        console.error("Failed to fetch stock overview", error);
       }
     };
   return (
@@ -596,25 +677,25 @@ export default function Dashboard() {
       <SectionCard
         title="Stock overview"
         action={
-          <div className="flex flex-wrap gap-2">
-            {stockFilters.map((filter) => (
-              <button
-                key={filter}
-                type="button"
-                onClick={() => setActiveStockFilter(filter)}
-                className={`rounded-full border px-3 py-1 text-[10px] font-medium transition ${
-                  activeStockFilter === filter
-                    ? 'border-medisync-teal bg-medisync-teal text-white'
-                    : 'border-medisync-border text-medisync-muted hover:border-medisync-teal hover:text-medisync-teal'
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
+          <div className="flex flex-wrap gap-2 ">
+          {stockFilters.map((filter) => (
+                <button
+                  key={filter.value}
+                  type="button"
+                  onClick={() => setActiveStockFilter(filter.value)}
+                  className={`rounded-full border px-3 py-1 text-[10px] font-medium transition ${
+                    activeStockFilter === filter.value
+                      ? "border-medisync-teal bg-medisync-teal text-white"
+                      : "border-medisync-border text-medisync-muted hover:border-medisync-teal hover:text-medisync-teal"
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              ))}
           </div>
         }
       >
-        <StockBarChart data={stockData} activeFilter={activeStockFilter} />
+        <StockBarChart data={stock} activeFilter={activeStockFilter} />
       </SectionCard>
 
       <SectionCard
