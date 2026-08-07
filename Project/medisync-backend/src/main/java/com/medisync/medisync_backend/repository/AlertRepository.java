@@ -47,5 +47,8 @@ public interface AlertRepository extends JpaRepository<Alert, Long> {
 	        AlertType alertType,
 	        List<AlertStatus> statuses
 	);
+	
+	
+
 
 }

@@ -1,7 +1,9 @@
 package com.medisync.medisync_backend.controller;
 
 import java.time.LocalDate;
+
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,11 +11,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+
 import com.medisync.medisync_backend.dto.DailySalesResponse;
 import com.medisync.medisync_backend.dto.DashboardStatisticsResponse;
+import com.medisync.medisync_backend.dto.PharmacistNameResponse;
 import com.medisync.medisync_backend.dto.StockOverviewResponse;
 import com.medisync.medisync_backend.dto.TodaysAlertResponse;
 import com.medisync.medisync_backend.dto.TopSellingMedicineResponse;
+
 import com.medisync.medisync_backend.service.DailySalesService;
 import com.medisync.medisync_backend.service.PharmacistDashStatisticsService;
 import com.medisync.medisync_backend.service.StockOverviewServiceImpl;
@@ -29,18 +34,22 @@ public class PharmacistDashboardController {
     private final TopSellingMedicineService topSellingMedicineService;
     private final TodaysAlertServiceImpl todaysAlertService;
     private final DailySalesService dailySalesService;
+   
+    //Constructor Injection
     public PharmacistDashboardController(
             PharmacistDashStatisticsService dashboardStatisticsService,
             StockOverviewServiceImpl stockOverviewService,
             TopSellingMedicineService topSellingMedicineService,
             TodaysAlertServiceImpl todaysAlertService,
-            DailySalesService dailySalesService) {
+            DailySalesService dailySalesService
+          ) {
 
         this.dashboardStatisticsService = dashboardStatisticsService;
         this.stockOverviewService = stockOverviewService;
         this.topSellingMedicineService = topSellingMedicineService;
         this.todaysAlertService=todaysAlertService;
         this.dailySalesService=dailySalesService;
+      
     }
 
     // Dashboard Statistics
@@ -83,4 +92,14 @@ public class PharmacistDashboardController {
         return ResponseEntity.ok(
                 dailySalesService.getDailySales(date));
     }
+    
+    // Get Logged In Pharmacist Name
+    @GetMapping("/me")
+    public ResponseEntity<PharmacistNameResponse> getLoggedInPharmacist() {
+        return ResponseEntity.ok(
+        		dashboardStatisticsService.getLoggedInPharmacist()
+        );
+    }
+    
+  
 }

@@ -20,25 +20,24 @@ const PharmacistLayout = () => {
   const location = useLocation();
   const isAlertsPage =
   location.pathname === "/dashboard/pharmacist/alerts";
-  const [showAlerts, setShowAlerts] = useState(false);
-  const alertRef = useRef(null);
-  const latestAlerts = [
-    {
-      id: 1,
-      medicine: "Paracetamol 500mg",
-      alert: "Out Of Stock"
-    },
-    {
-      id: 2,
-      medicine: "Amoxicillin 250mg",
-      alert: "Near Expiry"
-    },
-    {
-      id: 3,
-      medicine: "Pantoprazole",
-      alert: "Expired"
-    }
-  ];
+
+ 
+  //   {
+  //     id: 1,
+  //     medicine: "Paracetamol 500mg",
+  //     alert: "Out Of Stock"
+  //   },
+  //   {
+  //     id: 2,
+  //     medicine: "Amoxicillin 250mg",
+  //     alert: "Near Expiry"
+  //   },
+  //   {
+  //     id: 3,
+  //     medicine: "Pantoprazole",
+  //     alert: "Expired"
+  //   }
+  // ];
   // Navigation schema explicitly mirroring the layout items in image_0f704d.png
   const menuItems = [
     { label: 'Dashboard', path: '/dashboard/pharmacist', icon: LayoutDashboard },
@@ -77,100 +76,7 @@ const PharmacistLayout = () => {
         </div>
         <div className="flex-1 flex justify-end items-center gap-6 pr-2">
 
-           {/* ALERT ICON */}
-            {!isAlertsPage && (<div ref={alertRef} className="relative">
-
-              <button
-                onClick={() => setShowAlerts(!showAlerts)}
-                className="
-                  relative
-                  p-2
-                  rounded-full
-                 border border-slate-200 hover:border-brand-secondary hover:bg-teal-50 transition cursor-pointer
-                "
-              >
-                <Bell className="w-6 h-6 text-slate-600" />
-
-                {/* Notification Count */}
-                <span
-                  className="
-                    absolute
-                    -top-1
-                    -right-1
-                    bg-red-500
-                    text-white
-                    text-[10px]
-                    w-5
-                    h-5
-                    rounded-full
-                    flex
-                    items-center
-                    justify-center
-                    font-bold
-                  "
-                >
-                  {latestAlerts.length}
-                </span>
-              </button>
-
-              {/* ALERT POPUP */}
-              {showAlerts && (
-                <div
-                  className="
-                    absolute
-                    right-0
-                    mt-3
-                    w-80  
-                    bg-white
-                    border
-                    border-slate-300
-                    rounded-xl
-                    shadow-lg
-                    z-50
-                  "
-                >
-                  <div className="px-4 py-3 border-b-0">
-                    <h3 className="font-bold text-slate-700">
-                      Latest Alerts
-                    </h3>
-                  </div>
-
-                  {latestAlerts.map((item) => (
-                    <div
-                      key={item.id}
-                      className="px-4 py-3 border-b border-slate-100 last:border-b-0 hover:bg-teal-50 transition  cursor-pointer"
-                    >
-                      <p className="font-semibold text-sm">
-                        {item.medicine}
-                      </p>
-
-                      <p className="text-xs text-red-500">
-                        {item.alert}
-                      </p>
-                    </div>
-                  ))}
-
-                  {/* VIEW ALL ALERTS */}
-                  <button
-                    onClick={() => {
-                      navigate('/dashboard/pharmacist/alerts');
-                      setShowAlerts(false);
-                    }}
-                    className="
-                      w-full
-                      py-3
-                      text-sm
-                      font-semibold
-                      text-brand-secondary
-                      hover:bg-teal-50 border-t  border-slate-100 transition cursor-pointer
-                    "
-                  >
-                    View All Alerts
-                  </button>
-                </div>
-              )}
-            </div>
-            )}
+          
           <span className="text-[10px] bg-teal-50 text-teal-700 border border-teal-200 font-bold px-2.5 py-1 rounded-md tracking-wider">
             PHARMACIST DESK
           </span>
