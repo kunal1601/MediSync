@@ -23,18 +23,24 @@ public interface PharmacistDashStatisticsRepository extends JpaRepository<Medici
 			""",nativeQuery=true)
 			Long getBillsToday();
 	
-	@Query("""
-			SELECT COUNT(ms)
-			FROM MedicineStock ms
-			WHERE ms.stockQuantity < 30
-			""")
-			Long getLowStockItems();
+	@Query(value = """
+		    SELECT COUNT(*)
+		    FROM (
+		        SELECT medicine_id
+		        FROM medicine_stock
+		        GROUP BY medicine_id
+		        HAVING SUM(stock_quantity) > 0
+		           AND SUM(stock_quantity) <= 10
+		    ) AS low_stock_medicines
+		    """, nativeQuery = true)
+		Long getLowStockItems();
 	
 	@Query(value = """
-	        SELECT COUNT(*)
-	        FROM medicine_stock
-	        WHERE expiry_date BETWEEN CURDATE()
-	        AND DATE_ADD(CURDATE(), INTERVAL 30 DAY)
-	        """, nativeQuery = true)
-	Long getExpiringMedicines();
+		    SELECT COUNT(*)
+		    FROM medicine_stock
+		    WHERE expiry_date >= CURDATE()
+		      AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
+		    """, nativeQuery = true)
+		Long getExpiringMedicines();
+		
 }
