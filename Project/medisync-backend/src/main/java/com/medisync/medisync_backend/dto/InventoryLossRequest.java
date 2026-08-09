@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 public class InventoryLossRequest {
 
-    private Integer stockId;
+    private Long stockId;
 
     private Integer quantity;
 
