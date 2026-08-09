@@ -44,6 +44,11 @@ public class SalesInvoiceItem {
 	@Column(nullable=false,precision=10,scale=2)
 	private BigDecimal  price;
 	
+	
+	//preserves the billed amount even if prices change later (in future price change hui then bill ka total change na ho isliye)
+	@Column(nullable = false, precision = 10, scale = 2)
+	private BigDecimal lineTotal;
+	
 	public SalesInvoiceItem() {
     }
 }
