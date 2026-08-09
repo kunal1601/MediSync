@@ -26,6 +26,10 @@ public class SalesInvoice {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pharmacist_id", referencedColumnName = "id", nullable = true)
     private Pharmacist pharmacist;
+    
+    @ManyToOne
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 
     @Column(name = "gross_total", nullable = false, precision = 10, scale = 2)
     private BigDecimal grossTotal;
@@ -38,6 +42,14 @@ public class SalesInvoice {
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+    
+
+    
+    @Column(nullable = false, precision = 5, scale = 2)
+    private BigDecimal discountPercentage = BigDecimal.ZERO;
+
+    @Column(nullable = false)
+    private String paymentMode;
 
     @PrePersist
     protected void onCreate() {
