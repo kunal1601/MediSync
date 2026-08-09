@@ -42,4 +42,5 @@ public interface PharmacistDashStatisticsRepository extends JpaRepository<Medici
 		      AND expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
 		    """, nativeQuery = true)
 		Long getExpiringMedicines();
+		
 }
