@@ -31,7 +31,7 @@ export const useAdminLogin = () => {
 
     try {
       // 1. Send Login Payload matching Spring Boot AuthController LoginRequestDTO
-      const response = await axios.post('http://localhost:8080/api/auth/login', {
+      const response = await axios.post('http://65.0.45.209:8080/api/auth/login', {
         username: formData.login, // 🌟 Updated: Backend expects 'username'
         password: formData.password,
       });

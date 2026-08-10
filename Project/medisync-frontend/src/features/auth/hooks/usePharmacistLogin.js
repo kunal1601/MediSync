@@ -35,7 +35,7 @@ export const usePharmacistLogin = () => {
 
     try {
       // 1. Post credentials to Spring Boot AuthController
-      const response = await axios.post('http://localhost:8080/api/auth/login', {
+      const response = await axios.post('http://65.0.45.209:8080/api/auth/login', {
         username: formData.login, // 🌟 Updated: Backend expects 'username'
         password: formData.password,
       });

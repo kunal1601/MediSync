@@ -2,10 +2,10 @@ services:
   frontend:
     build:
       context: ./Project/medisync-frontend
-    container_name: app1
+    container_name: frontend
     ports:
-      - "3000:3000"
-    restart: frontend
+      - "80:80"
+    restart: unless-stopped
 
   backend:
     build:

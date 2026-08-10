@@ -3,7 +3,7 @@ import { UserPlus, Settings } from 'lucide-react'
 import axios from 'axios'
 import SectionCard from '../Widgets/SectionCard'
 
-const API_BASE_URL = 'http://localhost:8080/api/pharmacists'
+const API_BASE_URL = 'http://65.0.45.209:8080/api/pharmacists'
 
 const initialFormState = {
   fullName: '',

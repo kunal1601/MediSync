@@ -63,14 +63,14 @@ echo "Spring Boot PID: $SPRING_PID"
 
 echo "Waiting for Spring Boot to start..."
 
-until curl -s http://localhost:8080/ > /dev/null; do
-    if ! kill -0 $SPRING_PID 2>/dev/null; then
-        echo "Spring Boot stopped unexpectedly."
-        exit 1
-    fi
-
-    sleep 3
-done
+#until curl -s http://localhost:8080/ > /dev/null; do
+#    if ! kill -0 $SPRING_PID 2>/dev/null; then
+#        echo "Spring Boot stopped unexpectedly."
+#        exit 1
+#    fi
+#
+#    sleep 3
+#done
 
 echo "Spring Boot is running."
 
