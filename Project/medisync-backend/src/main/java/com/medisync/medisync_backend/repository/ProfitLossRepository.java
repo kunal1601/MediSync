@@ -9,7 +9,7 @@ public interface ProfitLossRepository extends JpaRepository<SalesInvoice,Integer
 
     // Total Revenue
     @Query(value = """
-            SELECT IFNULL(SUM(gross_total),0)
+            SELECT IFNULL(SUM(gross_total-(gross_total * discount_percentage / 100)),0)
             FROM sales_invoices
             """, nativeQuery = true)
     Double getTotalRevenue();

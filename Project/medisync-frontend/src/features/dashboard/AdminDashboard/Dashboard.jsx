@@ -94,6 +94,7 @@ function ProfitLossChart() {
   const fetchProfitLoss = async () => {
         try {
           const data = await getProfitLoss();
+          const isProfit = data.profit >= 0;
           const chartData = [
 
             {
@@ -105,7 +106,7 @@ function ProfitLossChart() {
               color:"#94a3b8"
             },
             {
-              name:"Profit",
+              name: isProfit ? "Profit" : "Net Loss",
               amount:data.profit,
               value:
               Number(((data.profit / data.revenue) * 100))
@@ -113,7 +114,7 @@ function ProfitLossChart() {
               color:"#14b8a6"
             },
             {
-              name:"Loss",
+              name:"Inventory Loss",
               amount:data.loss,
               value:
               Number(((data.loss / data.revenue) * 100))
@@ -124,15 +125,14 @@ function ProfitLossChart() {
           setProfitLossData(chartData);
 
           setProfitMargin(
-            ((data.profit/data.revenue)*100)
-            .toFixed(1)
+           Number(((data.profit / data.revenue) * 100).toFixed(1))
           );
         }
         catch(error){
 
           console.log(error);
         }
-      };
+  };
 
       const total = profitLossData.reduce(
         (sum,item)=>sum+item.amount,
@@ -184,11 +184,11 @@ function ProfitLossChart() {
 
             <span className="text-center text-sm font-bold text-medisync-teal">
 
-              +{profitMargin}%
+               {profitMargin >= 0 ? "+" : ""}{profitMargin}%
                 <br/>
 
             <span className="text-xs font-semibold">
-            Profit
+            {profitMargin >= 0 ? "Profit" : "Net Loss"}
             </span>
           </span>
         </div>
@@ -198,7 +198,7 @@ function ProfitLossChart() {
 
         <div className="space-y-3">
           <p className="text-xs text-medisync-muted">
-            Total revenue tracked:
+            Total Amount tracked:
             <span className="font-semibold text-medisync-text">
               {" "}
               {formatCurrency(total)}

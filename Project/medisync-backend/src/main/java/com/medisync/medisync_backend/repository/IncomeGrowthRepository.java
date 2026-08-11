@@ -12,7 +12,9 @@ public interface IncomeGrowthRepository  extends JpaRepository<SalesInvoice,Inte
 	@Query(value="""
 			SELECT 
 				DATE(created_at) AS label,
-				SUM(net_payable) AS income
+				SUM(gross_total -
+			 	(gross_total * discount_percentage / 100)
+			 ) AS income
 			FROM sales_invoices
 			WHERE created_at>=CURDATE()-INTERVAL 6 DAY
 			GROUP BY DATE(created_at)
@@ -24,7 +26,9 @@ public interface IncomeGrowthRepository  extends JpaRepository<SalesInvoice,Inte
 	  @Query(value="""
 	  		SELECT 
 	  			DATE(created_at) AS label,
-	  			SUM(net_payable) AS income
+	  			SUM(gross_total -
+	  			(gross_total * discount_percentage / 100)
+	  		) AS income
 	  		FROM sales_invoices
 	  		WHERE created_at>=CURDATE()- Interval 29 DAY
 	  		GROUP BY DATE(created_at)
@@ -36,7 +40,9 @@ public interface IncomeGrowthRepository  extends JpaRepository<SalesInvoice,Inte
 	  @Query(value="""
 	  		SELECT
 			    YEAR(created_at) AS label,
-			    SUM(net_payable) AS income
+			    SUM(gross_total -
+	  				 (gross_total * discount_percentage / 100)
+	  			) AS income
 			FROM sales_invoices
 			WHERE YEAR(created_at) >= YEAR(CURDATE()) - 4
 			GROUP BY YEAR(created_at)
