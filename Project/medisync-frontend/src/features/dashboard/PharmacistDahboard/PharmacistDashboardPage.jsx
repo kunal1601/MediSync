@@ -8,491 +8,398 @@ import { getDashboardStatistics } from './Services/DashboardStatistics';
 import { getTodaysAlerts } from './Services/TodaysAlert';
 import { getDailySales } from './Services/Calender';
 import { getLoggedInPharmacist } from './Services/GetPharmacist';
+import MediBotChat from '../../MediChatBot/MediBotChat'; // 👈 Correct relative import
+
 /**
  * View Component: Pharmacist Interactive Analytics Panel
- * Renders filter controls and stock tracking charts matching image_0f704d.png
+ * Renders filter controls and stock tracking charts
  */
-
-
 const PharmacistDashboardPage = () => {
-    //Hooks
+  // Hooks
   const [activeFilter, setActiveFilter] = useState('By Drug Type');
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [topSellingMedicine,setTopSellingMedicine]=useState([]);
+  const [topSellingMedicine, setTopSellingMedicine] = useState([]);
   const [todaysAlerts, setTodaysAlerts] = useState([]);
   const [pharmacist, setPharmacist] = useState(null);
+
   const formatLabel = (value) =>
     (value || "")
-        .replace(/_/g, " ")
-        .toLowerCase()
-        .replace(/\b\w/g, c => c.toUpperCase());
+      .replace(/_/g, " ")
+      .toLowerCase()
+      .replace(/\b\w/g, c => c.toUpperCase());
 
   const getPriority = (type) => {
     switch (type) {
-        case "OUT_OF_STOCK":
-        case "EXPIRED":
-            return "High";
+      case "OUT_OF_STOCK":
+      case "EXPIRED":
+        return "High";
 
-        case "LOW_STOCK":
-        case "NEAR_EXPIRY":
-            return "Medium";
+      case "LOW_STOCK":
+      case "NEAR_EXPIRY":
+        return "Medium";
 
-        default:
-            return "Low";
-        }
-    };
-    //Hook for dashboard statistics 
-  const [statistics,setStatistics]=useState( {totalSales: 0,
+      default:
+        return "Low";
+    }
+  };
+
+  // Hook for dashboard statistics 
+  const [statistics, setStatistics] = useState({
+    totalSales: 0,
     billsToday: 0,
     lowStockItems: 0,
-    expiringMedicines: 0});
+    expiringMedicines: 0
+  });
 
-    const [dailySales, setDailySales] = useState({
+  const [dailySales, setDailySales] = useState({
     salesToday: 0,
     billsGenerated: 0,
     avgBillValue: 0,
-    });
-    const filterTabs=[
-        "By Drug Type",
-        "By Company Name",
-        "By Year",
-        "By Most Sold"
-        ];
+  });
 
-    // Data map replicating the dynamic visual values in the design chart
-    const [chartData,setChartData]=useState([]);
-        useEffect(() => {
+  const filterTabs = [
+    "By Drug Type",
+    "By Company Name",
+    "By Year",
+    "By Most Sold"
+  ];
 
-        fetchStockOverview("drug");
-        fetchTopSellingMedicine();
-        fetchDashboardStatistics();
-        fetchTodaysAlerts();
-        fetchDailySales();
-        fetchLoggedInPharmacist();
-        }, []);
-        
-        useEffect(() => {
+  // Data map replicating the dynamic visual values in the design chart
+  const [chartData, setChartData] = useState([]);
 
-            if (selectedDate) {
-                fetchDailySales(selectedDate);
-            }
+  useEffect(() => {
+    fetchStockOverview("drug");
+    fetchTopSellingMedicine();
+    fetchDashboardStatistics();
+    fetchTodaysAlerts();
+    fetchDailySales();
+    fetchLoggedInPharmacist();
+  }, []);
 
-        }, [selectedDate]);
-        const formatDate = (date) => {
-            const year = date.getFullYear();
-            const month = String(date.getMonth() + 1).padStart(2, "0");
-            const day = String(date.getDate()).padStart(2, "0");
-
-            return `${year}-${month}-${day}`;
-        };
-        const fetchDailySales = async (date) => {
-        try {
-
-            // const formattedDate = date.toISOString().split("T")[0];
-             const formattedDate = formatDate(date);
-            console.log(formattedDate);
-            const data = await getDailySales(formattedDate);
-
-            setDailySales(data);
-
-        } catch (err) {
-
-            console.error("Error fetching daily sales", err);
-
-        }
-    };
-    //For Stock Overview
-    const fetchStockOverview = async (filter) => {
-
-        try {
-
-            const data = await getStockOverview(filter);
-            console.log(data);
-            const colors = [
-                "bg-teal-400",
-                "bg-teal-400",
-                "bg-teal-400",
-                "bg-teal-400",
-                "bg-teal-400",
-                "bg-teal-400"
-            ];
-
-            const maxSales =
-                    data.length>0
-                    ? Math.max(...data.map(item=>item.sales))
-                    :1;
-
-            const formatted = data.map((item, index) => ({
-                category: item.label,
-                sales : item.sales,
-                total: maxSales,
-                color: colors[index % colors.length],
-                pattern: index % 2 === 0
-            }));
-
-            setChartData(formatted);
-
-        } catch (error) {
-
-            console.error(error);
-
-        }
-
-    };
-    //For getting current Logged in Pharmacist Name
-    const fetchLoggedInPharmacist = async () => {
-
-        try {
-
-            const data = await getLoggedInPharmacist();
-            setPharmacist(data);
-
-        } catch (error) {
-
-            console.error(error);
-
-        }
-    };
-    //For Dashboard Statistics Cards
-    const fetchDashboardStatistics=async()=>{
-        try{
-            const data=await getDashboardStatistics();
-            setStatistics(data);
-        }catch(err){
-            console.log(err);
-        }
+  useEffect(() => {
+    if (selectedDate) {
+      fetchDailySales(selectedDate);
     }
-    //For Top Selling medicines
-    const fetchTopSellingMedicine=async()=>{
-        try{
-            const data= await getTopSellingMedicines();
-            setTopSellingMedicine(data);
-        }catch(err){
-            console.error("Error in Fetching data",err);
-        }
-        };
-    const fetchTodaysAlerts = async () => {
+  }, [selectedDate]);
 
-        try {
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
 
-            const data = await getTodaysAlerts();
+    return `${year}-${month}-${day}`;
+  };
 
-            setTodaysAlerts(data);
+  const fetchDailySales = async (date) => {
+    try {
+      const formattedDate = formatDate(date);
+      console.log(formattedDate);
+      const data = await getDailySales(formattedDate);
+      setDailySales(data);
+    } catch (err) {
+      console.error("Error fetching daily sales", err);
+    }
+  };
 
-        } catch (err) {
+  // For Stock Overview
+  const fetchStockOverview = async (filter) => {
+    try {
+      const data = await getStockOverview(filter);
+      console.log(data);
+      const colors = [
+        "bg-teal-400",
+        "bg-teal-400",
+        "bg-teal-400",
+        "bg-teal-400",
+        "bg-teal-400",
+        "bg-teal-400"
+      ];
 
-            console.error("Error fetching today's alerts", err);
+      const maxSales =
+        data.length > 0
+          ? Math.max(...data.map(item => item.sales))
+          : 1;
 
-        }
+      const formatted = data.map((item, index) => ({
+        category: item.label,
+        sales: item.sales,
+        total: maxSales,
+        color: colors[index % colors.length],
+        pattern: index % 2 === 0
+      }));
 
-    };
-     // Find the maximum target value from the chart
-    const maxValue =
-        chartData.length > 0
-        ? Math.max(...chartData.map(item => item.total))
-            : 100;
-    // Round it to the next 100
-    const roundedMax = Math.ceil(maxValue / 100) * 100;
+      setChartData(formatted);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-    // Create Y-axis labels
-    const yAxisValues = [
-        roundedMax,
-        Math.round(roundedMax * 0.75),
-        Math.round(roundedMax * 0.5),
-        Math.round(roundedMax * 0.25),
-        0,
-    ];
-    //For Greeting based on current time
-    const getGreeting = () => {
-        const hour = new Date().getHours();
+  // For getting current Logged in Pharmacist Name
+  const fetchLoggedInPharmacist = async () => {
+    try {
+      const data = await getLoggedInPharmacist();
+      setPharmacist(data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
-        if (hour < 12) {
-            return "Good Morning";
-        } else if (hour < 17) {
-            return "Good Afternoon";
-        } else {
-            return "Good Evening";
-        }
-    };
+  // For Dashboard Statistics Cards
+  const fetchDashboardStatistics = async () => {
+    try {
+      const data = await getDashboardStatistics();
+      setStatistics(data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  // For Top Selling medicines
+  const fetchTopSellingMedicine = async () => {
+    try {
+      const data = await getTopSellingMedicines();
+      setTopSellingMedicine(data);
+    } catch (err) {
+      console.error("Error in Fetching data", err);
+    }
+  };
+
+  const fetchTodaysAlerts = async () => {
+    try {
+      const data = await getTodaysAlerts();
+      setTodaysAlerts(data);
+    } catch (err) {
+      console.error("Error fetching today's alerts", err);
+    }
+  };
+
+  // Find the maximum target value from the chart
+  const maxValue =
+    chartData.length > 0
+      ? Math.max(...chartData.map(item => item.total))
+      : 100;
+
+  // Round it to the next 100
+  const roundedMax = Math.ceil(maxValue / 100) * 100;
+
+  // Create Y-axis labels
+  const yAxisValues = [
+    roundedMax,
+    Math.round(roundedMax * 0.75),
+    Math.round(roundedMax * 0.5),
+    Math.round(roundedMax * 0.25),
+    0,
+  ];
+
+  // For Greeting based on current time
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+
+    if (hour < 12) {
+      return "Good Morning";
+    } else if (hour < 17) {
+      return "Good Afternoon";
+    } else {
+      return "Good Evening";
+    }
+  };
+
   return (
     <div className="space-y-6 animate-fadeIn text-left">
-     {/* Welcome Banner */}
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+      {/* Welcome Banner */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
         <h1 className="text-2xl font-bold text-slate-800">
-            {getGreeting()},{" "}
-        {pharmacist
+          {getGreeting()},{" "}
+          {pharmacist
             ? `${pharmacist.firstName} ${pharmacist.lastName}`
             : "Pharmacist"}{" "}
-        👋
+          👋
         </h1>
 
         <p className="text-slate-500 mt-2">
-            Here's today's pharmacy performance overview.
+          Here's today's pharmacy performance overview.
         </p>
-    </div>
+      </div>
 
-{/* Statistics Cards */}
-<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
-
-
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-        <p className="text-slate-500 text-sm">Total Sales</p>
-        <h2 className="text-3xl font-bold text-brand-secondary mt-2">
+      {/* Statistics Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+          <p className="text-slate-500 text-sm">Total Sales</p>
+          <h2 className="text-3xl font-bold text-brand-secondary mt-2">
             ₹{statistics.totalSales}
-        </h2>
-    </div>
+          </h2>
+        </div>
 
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-        <p className="text-slate-500 text-sm">Bills Today</p>
-        <h2 className="text-3xl font-bold text-brand-secondary mt-2">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+          <p className="text-slate-500 text-sm">Bills Today</p>
+          <h2 className="text-3xl font-bold text-brand-secondary mt-2">
             {statistics.billsToday}
-        </h2>
-    </div>
+          </h2>
+        </div>
 
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-        <p className="text-slate-500 text-sm">Low Stock Items</p>
-        <h2 className="text-3xl font-bold text-orange-500 mt-2">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+          <p className="text-slate-500 text-sm">Low Stock Items</p>
+          <h2 className="text-3xl font-bold text-orange-500 mt-2">
             {statistics.lowStockItems}
-        </h2>
-    </div>
+          </h2>
+        </div>
 
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
-        <p className="text-slate-500 text-sm">Expiring Medicines</p>
-        <h2 className="text-3xl font-bold text-red-500 mt-2">
+        <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+          <p className="text-slate-500 text-sm">Expiring Medicines</p>
+          <h2 className="text-3xl font-bold text-red-500 mt-2">
             {statistics.expiringMedicines}
-        </h2>
-    </div>
-
-</div>
-
-{/* Alerts + Calendar */}
-<div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-stretch">
-
-    {/* Alerts */}
-    <div className="xl:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden xl:h-[340px]">
-
-        <div className="px-5 py-3 border-b border-slate-100 shrink-0">
-            <h3 className="font-bold text-base text-slate-800">
-                Today's Alerts
-            </h3>
+          </h2>
         </div>
+      </div>
 
-      <div className="p-4 space-y-2 overflow-y-auto flex-1 min-h-0 pr-2 dashboard-alerts-scroll">
+      {/* Alerts + Calendar */}
+      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6 items-stretch">
+        {/* Alerts */}
+        <div className="xl:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden xl:h-[340px]">
+          <div className="px-5 py-3 border-b border-slate-100 shrink-0">
+            <h3 className="font-bold text-base text-slate-800">
+              Today's Alerts
+            </h3>
+          </div>
 
-        {todaysAlerts.length === 0 ? (
-
-            <div className="text-center py-10">
-
+          <div className="p-4 space-y-2 overflow-y-auto flex-1 min-h-0 pr-2 dashboard-alerts-scroll">
+            {todaysAlerts.length === 0 ? (
+              <div className="text-center py-10">
                 <p className="text-lg font-semibold text-green-600">
-                    ✅ No Alerts Today
+                  ✅ No Alerts Today
                 </p>
-
                 <p className="text-sm text-slate-500 mt-2">
-                    All medicines are sufficiently stocked and there are no expired or near expiry medicines.
+                  All medicines are sufficiently stocked and there are no expired or near expiry medicines.
                 </p>
+              </div>
+            ) : (
+              todaysAlerts.map((alert, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100 hover:border-brand-secondary/30 hover:shadow-sm transition"
+                >
+                  <div>
+                    <p className="font-semibold">
+                      {alert.medicineName}
+                    </p>
+                    <p className="text-sm text-slate-500">
+                      {formatLabel(alert.alertType)}
+                    </p>
+                  </div>
 
-            </div>
-
-        ) : (
-
-                todaysAlerts.map((alert, index) => (
-
-                    <div
-                        key={index}
-                        className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100 hover:border-brand-secondary/30 hover:shadow-sm transition"
-                    >
-                        <div>
-                            <p className="font-semibold">
-                                {alert.medicineName}
-                            </p>
-
-                            <p className="text-sm text-slate-500">
-                                 {formatLabel(alert.alertType)}
-                            </p>
-                        </div>
-
-                        <span
-                            className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                                getPriority(alert.alertType) === "High"
-                                    ? "bg-red-100 text-red-600"
-                                    : "bg-orange-100 text-orange-600"
-                            }`}
-                        >
-                            {formatLabel(alert.alertType)}
-                        </span>
-
-                    </div>
-
-                ))
-
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      getPriority(alert.alertType) === "High"
+                        ? "bg-red-100 text-red-600"
+                        : "bg-orange-100 text-orange-600"
+                    }`}
+                  >
+                    {formatLabel(alert.alertType)}
+                  </span>
+                </div>
+              ))
             )}
-
+          </div>
         </div>
-
-    </div>
-
-    {/* Calendar */}
-    <div className="xl:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden xl:h-[340px]">
-
-        <div className="px-5 py-3 border-b border-slate-100 shrink-0">
-            <h3 className="font-bold text-base text-slate-800">
-                Daily Sales Calendar
-            </h3>
-        </div>
-
-        <div className="p-4 flex-1 min-h-0">
-
-    <div className="grid md:grid-cols-2 gap-4 h-full">
 
         {/* Calendar */}
-        <div className="min-h-0">
-            <Calendar
-                className="dashboard-calendar-compact"
-                onChange={(date) => setSelectedDate(date)}
-                value={selectedDate}
-            />
-        </div>
+        <div className="xl:col-span-3 bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden xl:h-[340px]">
+          <div className="px-5 py-3 border-b border-slate-100 shrink-0">
+            <h3 className="font-bold text-base text-slate-800">
+              Daily Sales Calendar
+            </h3>
+          </div>
 
-        {/* Sales Analytics */}
-        <div className="space-y-2">
+          <div className="p-4 flex-1 min-h-0">
+            <div className="grid md:grid-cols-2 gap-4 h-full">
+              {/* Calendar */}
+              <div className="min-h-0">
+                <Calendar
+                  className="dashboard-calendar-compact"
+                  onChange={(date) => setSelectedDate(date)}
+                  value={selectedDate}
+                />
+              </div>
 
-            <div className="rounded-lg bg-brand-secondary/10 p-3">
-                <p className="text-xs text-slate-500">
-                    Sales Today
-                </p>
-
-                <h3 className="text-2xl font-bold text-brand-secondary mt-0.5">
-                   ₹{dailySales.salesToday}
-                </h3>
-            </div>
-
-            <div className="rounded-lg bg-slate-50 p-3">
-                <p className="text-xs text-slate-500">
-                    Bills Generated
-                </p>
-
-                <h3 className="text-xl font-bold text-slate-800 mt-0.5">
-                    {dailySales.billsGenerated}
-                </h3>
-            </div>
-
-            <div className="rounded-lg bg-slate-50 p-3">
-                <p className="text-xs text-slate-500">
-                    Avg Bill Value
-                </p>
-
-                <h3 className="text-xl font-bold text-slate-800 mt-0.5">
-                    ₹{Number(dailySales.avgBillValue).toFixed(2)}
-                </h3>
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-    </div>
-
-   
-
-</div>
- {/* Top Selling Medicines */}
-    {/* Top Medicines */}
-
-<div className="bg-white rounded-xl border border-slate-200 shadow-sm">
-
-    <div className="px-6 py-4 border-b border-slate-100">
-        <h3 className="font-bold text-lg text-slate-800">
-            Top Selling Medicines
-        </h3>
-    </div>
-
-    <div className="p-6">
-
-        <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
-
-            {topSellingMedicine.map((medicine) => (
-
-                <div
-                    key={medicine.medicineName}
-                    className="
-                        p-5
-                        rounded-xl
-                        bg-slate-50
-                        border
-                        border-slate-100
-                    "
-                >
-                    <p className="font-semibold text-slate-800">
-                        {medicine.medicineName}
-                    </p>
-
-                    <p className="mt-2 text-brand-secondary font-bold text-xl">
-                        {medicine.unitsSold}
-                    </p>
-
-                    <p className="text-xs text-slate-400">
-                        Units Sold
-                    </p>
+              {/* Sales Analytics */}
+              <div className="space-y-2">
+                <div className="rounded-lg bg-brand-secondary/10 p-3">
+                  <p className="text-xs text-slate-500">Sales Today</p>
+                  <h3 className="text-2xl font-bold text-brand-secondary mt-0.5">
+                    ₹{dailySales.salesToday}
+                  </h3>
                 </div>
 
-            ))}
+                <div className="rounded-lg bg-slate-50 p-3">
+                  <p className="text-xs text-slate-500">Bills Generated</p>
+                  <h3 className="text-xl font-bold text-slate-800 mt-0.5">
+                    {dailySales.billsGenerated}
+                  </h3>
+                </div>
 
+                <div className="rounded-lg bg-slate-50 p-3">
+                  <p className="text-xs text-slate-500">Avg Bill Value</p>
+                  <h3 className="text-xl font-bold text-slate-800 mt-0.5">
+                    ₹{Number(dailySales.avgBillValue).toFixed(2)}
+                  </h3>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Top Selling Medicines */}
+      <div className="bg-white rounded-xl border border-slate-200 shadow-sm">
+        <div className="px-6 py-4 border-b border-slate-100">
+          <h3 className="font-bold text-lg text-slate-800">
+            Top Selling Medicines
+          </h3>
         </div>
 
-    </div>
+        <div className="p-6">
+          <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-5">
+            {topSellingMedicine.map((medicine) => (
+              <div
+                key={medicine.medicineName}
+                className="p-5 rounded-xl bg-slate-50 border border-slate-100"
+              >
+                <p className="font-semibold text-slate-800">
+                  {medicine.medicineName}
+                </p>
+                <p className="mt-2 text-brand-secondary font-bold text-xl">
+                  {medicine.unitsSold}
+                </p>
+                <p className="text-xs text-slate-400">Units Sold</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
 
-</div>
-
-{/* Existing Stock Overview Graph */}
-<div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-    {/* Your existing graph code here */}
-</div>
       {/* STOCK OVERVIEW MAIN CONTAINER PANEL */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-        
-        {/* COMPONENT TITLE HEADER */}
         <div className="px-6 py-4 border-b border-slate-100 bg-white">
           <h2 className="text-xl font-bold text-slate-800 tracking-tight">Stock overview</h2>
         </div>
 
-        {/* CORE INTERACTIVE VISUAL CONTENT REGION */}
         <div className="p-8 bg-white flex flex-col items-center">
-          
           {/* TAB CONTROLS STRIP */}
           <div className="flex flex-wrap items-center justify-center gap-3 mb-12">
             {filterTabs.map((tab) => (
               <button
                 key={tab}
                 onClick={() => {
-
-                    setActiveFilter(tab);
-
-                    if (tab === "By Drug Type") {
-
-                        fetchStockOverview("drug");
-
-                    }
-
-                    else if (tab === "By Company Name") {
-
-                        fetchStockOverview("company");
-
-                    }
-
-                    else if (tab === "By Year") {
-
-                        fetchStockOverview("year");
-
-                    }
-
-                    else if (tab === "By Most Sold") {
-
-                        fetchStockOverview("mostsold");
-
-                    }
-
+                  setActiveFilter(tab);
+                  if (tab === "By Drug Type") {
+                    fetchStockOverview("drug");
+                  } else if (tab === "By Company Name") {
+                    fetchStockOverview("company");
+                  } else if (tab === "By Year") {
+                    fetchStockOverview("year");
+                  } else if (tab === "By Most Sold") {
+                    fetchStockOverview("mostsold");
+                  }
                 }}
                 className={`px-5 py-2 rounded-full text-sm font-semibold transition border cursor-pointer select-none
                   ${activeFilter === tab
@@ -505,60 +412,52 @@ const PharmacistDashboardPage = () => {
             ))}
           </div>
 
-          {/* DATA DATA GRAPH VISUAL CONTAINER */}
+          {/* DATA GRAPH VISUAL CONTAINER */}
           <div className="w-full max-w-5xl grid grid-cols-[auto_1fr] gap-x-6 items-end pt-4 px-4">
-            
             {/* Y-AXIS LABEL SCALES */}
             <div className="flex flex-col justify-between h-64 text-xs font-bold text-slate-600 pb-8 text-right pr-2 select-none">
-                {yAxisValues.map((value, index) => (
-                    <div
-                    key={index}
-                    className={`flex items-center justify-end relative ${
-                        index === yAxisValues.length - 1
-                        ? "h-0"
-                        : ""
-                    }`}
-                    >
-                    {index === 0 && (
-                        <span className="absolute -left-12 rotate-270 whitespace-nowrap text-[10px] font-semibold text-slate-400 tracking-wider">
-                        Sales →
-                        </span>
-                    )}
-
-                    <span>{value}</span>
-                    </div>
-                ))}
+              {yAxisValues.map((value, index) => (
+                <div
+                  key={index}
+                  className={`flex items-center justify-end relative ${
+                    index === yAxisValues.length - 1 ? "h-0" : ""
+                  }`}
+                >
+                  {index === 0 && (
+                    <span className="absolute -left-12 -rotate-90 whitespace-nowrap text-[10px] font-semibold text-slate-400 tracking-wider">
+                      Sales →
+                    </span>
+                  )}
+                  <span>{value}</span>
                 </div>
+              ))}
+            </div>
 
             {/* CHART DATA PLOT CANVAS GRID */}
             <div className="relative h-64 border-b-2 border-slate-300 flex items-end justify-between px-6 gap-4">
-              
               {chartData.map((bar, idx) => {
-                // Calculate precise element percentage constraints
                 const fillHeight = (bar.sales / bar.total) * 100;
                 const balanceHeight = 100 - fillHeight;
 
-                   
                 return (
                   <div key={idx} className="flex-1 flex flex-col items-center justify-end h-full max-w-[90px] group">
                     <div className="w-full flex flex-col justify-end h-full rounded-t-sm overflow-hidden relative shadow-sm">
-                      
-                      {/* Top Remaining Scale Segment (Light-Pink tinted grid filler backings) */}
+                      {/* Top Remaining Scale Segment */}
                       {balanceHeight > 0 && (
-                        <div 
+                        <div
                           className="w-full transition-all duration-500 relative"
-                          style={{ 
+                          style={{
                             height: `${balanceHeight}%`,
                             backgroundColor: bar.pattern ? '#f5f3ff' : '#fff1f2',
-                            backgroundImage: bar.pattern 
-                              ? 'repeating-linear-gradient(45deg, #e0e7ff 0px, #e0e7ff 2px, transparent 2px, transparent 8px)' 
+                            backgroundImage: bar.pattern
+                              ? 'repeating-linear-gradient(45deg, #e0e7ff 0px, #e0e7ff 2px, transparent 2px, transparent 8px)'
                               : 'repeating-linear-gradient(90deg, #ffe4e6 0px, #ffe4e6 1px, transparent 1px, transparent 4px)'
                           }}
                         />
                       )}
 
                       {/* Active Sold Metric Value Segment */}
-                      <div 
+                      <div
                         className={`w-full ${bar.color} transition-all duration-700 ease-out`}
                         style={{ height: `${fillHeight}%` }}
                       />
@@ -578,9 +477,11 @@ const PharmacistDashboardPage = () => {
           <div className="w-full max-w-4xl text-center pt-10 pl-16 text-[10px] font-bold text-slate-400 tracking-wider uppercase select-none">
             Product Category &rarr;
           </div>
-
         </div>
       </div>
+
+      {/* 🔴 FLOATING MEDIBOT CHAT WIDGET */}
+      <MediBotChat />
     </div>
   );
 };

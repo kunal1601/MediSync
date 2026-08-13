@@ -1,1 +1,10 @@
-/.metadata/
+# Prevent sensitive environment keys from being pushed to Git
+.env
+.env.local
+.env.*.local
+
+# Python virtual environment & cache
+.venv/
+venv/
+__pycache__/
+*.pyc

@@ -22,18 +22,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtTokenProvider tokenProvider;
     private final CustomUserDetailsService customUserDetailsService;
 
-    // 🌟 SKIP JWT VALIDATION FOR AUTH ENDPOINTS
+    // 🌟 SKIP JWT VALIDATION FOR AUTH & PUBLIC CHAT ENDPOINTS
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getRequestURI();
-        return path.startsWith("/api/auth/");
+        return path.startsWith("/api/auth/") 
+            || path.startsWith("/api/chat/")
+            || path.startsWith("/api/billing/")
+            || path.startsWith("/api/pharmacists/");
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-    	try {
+        try {
             String jwt = getJwtFromRequest(request);
 
             if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
@@ -47,10 +50,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception ex) {
-        	
-            // Log error if needed, but allow request chain to proceed
             logger.error("Could not set user authentication in security context", ex);
-    
         }
 
         filterChain.doFilter(request, response);
